@@ -34,6 +34,7 @@ var generateRandomString = function(length) {
 
 var stateKey = 'spotify_auth_state';
 
+var global_token = '';
 var app = express();
 
 app.use(express.static(__dirname + '/public'))
@@ -46,7 +47,7 @@ app.get('/login', function(req, res) {
   res.cookie(stateKey, state);
 
   // your application requests authorization
-  var scope = 'user-read-private user-read-email';
+  var scope = 'user-read-private user-read-email user-modify-playback-state user-read-playback-state';
   res.redirect('https://accounts.spotify.com/authorize?' +
     querystring.stringify({
       response_type: 'code',
@@ -56,6 +57,28 @@ app.get('/login', function(req, res) {
       state: state
     }));
 });
+
+app.get('/arthur_pause', function(req, res) {
+
+  var code = req.query.code || null;
+  var state = req.query.state || null;
+  var storedState = req.cookies ? req.cookies[stateKey] : null;
+
+        var access_token = global_token;
+
+        var options = {
+          url: 'https://api.spotify.com/v1/me/player/pause',
+          headers: { 'Authorization': 'Bearer ' + access_token },
+          json: true,
+        };
+
+        // use the access token to access the Spotify Web API
+        request.put(options, function(error, response, body) {
+          // do stuff with error?
+        });
+});
+
+
 
 app.get('/callback', function(req, res) {
 
@@ -97,6 +120,8 @@ app.get('/callback', function(req, res) {
           headers: { 'Authorization': 'Bearer ' + access_token },
           json: true
         };
+
+        global_token = access_token;  // store the token as global var. not good?
 
         // use the access token to access the Spotify Web API
         request.get(options, function(error, response, body) {
