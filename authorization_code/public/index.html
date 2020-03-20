@@ -38,8 +38,8 @@
 				<p>
 					<button class="btn btn-lg btn-primary btn-success" id="start_search">Search it</button>
         </p>
-        <div id="spotify-tracks">
-        </div>
+        <table id="spotify-tracks">
+        </table>
 				<div id="status"></div>
 			</div>
       </div>
@@ -73,10 +73,10 @@
       </dl>
     </script>
 
-    <script id="spotify-tracks-template" type="text/x-handlebars-template">
+    <!-- <script id="spotify-tracks-template" type="text/x-handlebars-template">
       <h2>Search results</h2>
       <p>{{arthur_result}}</p>
-    </script>
+    </script> -->
 
     <script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/2.0.0-alpha.1/handlebars.min.js"></script>
     <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
@@ -105,10 +105,9 @@
             oauthTemplate = Handlebars.compile(oauthSource),
             oauthPlaceholder = document.getElementById('oauth');
 
-        var searchResultsSource = document.getElementById('spotify-tracks-template').innerHTML,
-            searchResultsTemplate = Handlebars.compile(searchResultsSource),
-            searchResultsPlaceholder = document.getElementById('spotify-tracks');
-
+        // var searchResultsSource = document.getElementById('spotify-tracks-template').innerHTML,
+        //     searchResultsTemplate = Handlebars.compile(searchResultsSource),
+        var    searchResultsPlaceholder = document.getElementById('spotify-tracks');
         var params = getHashParams();
 
         var access_token = params.access_token,
@@ -165,6 +164,7 @@
           }, false);
 
           document.getElementById('start_search').addEventListener('click', function() {
+            // to do: block empty requests
             var dadata = $('#search_input').val();
             console.log(dadata);
             $.ajax({
@@ -173,10 +173,20 @@
                 'search_input': dadata
               }
             }).done(function(data) {
-              console.log('received', data);
-              searchResultsPlaceholder.innerHTML = searchResultsTemplate({
-                arthur_result:data.filtered[0].name,
-              });
+              /** Update @param result_body html table with @param result_data array of objects. */
+              function setResultTable(results_body, results_data)
+              {
+                results_body.innerHTML = '';  // hard reset
+                results_data.forEach(function(element){
+                  var tr = results_body.insertRow();
+                  Object.values(element).forEach((val) => {
+                    var cell = tr.insertCell();
+                    cell.innerHTML = val;
+                  });
+                  results_body.appendChild(tr);
+                });
+              }
+              setResultTable(searchResultsPlaceholder, data.filtered);
             });
           }, false);
 
