@@ -35,16 +35,17 @@
         <button class="btn btn-default" id="arthur_pause">trigger /arthur_pause</button>
         <h1>Search</h1>
         <h2>Search input</h2>
-				<div class="form-group">
+        <div class="form-group">
           <input id="search_input" value="harder better faster stronger"></input>
-				</div>
-				<p>
-					<button class="btn btn-lg btn-primary btn-success" id="start_search">Search it</button>
+        </div>
+        <p>
+          <button class="btn btn-lg btn-primary btn-success" id="start_search">Search it</button>
         </p>
         <table id="spotify-tracks">
         </table>
-				<div id="status"></div>
-			</div>
+        <div id="status"></div>
+        <div>
+        </div>
       </div>
     </div>
 
@@ -95,7 +96,7 @@
           var e, r = /([^&;=]+)=?([^&;]*)/g,
               q = window.location.hash.substring(1);
           while ( e = r.exec(q)) {
-             hashParams[e[1]] = decodeURIComponent(e[2]);
+            hashParams[e[1]] = decodeURIComponent(e[2]);
           }
           return hashParams;
         }
@@ -169,7 +170,6 @@
           document.getElementById('start_search').addEventListener('click', function() {
             // to do: block empty requests
             var dadata = $('#search_input').val();
-            console.log(dadata);
             $.ajax({
               url: '/arthur_search',
               data: {

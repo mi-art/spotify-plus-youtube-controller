@@ -41,7 +41,6 @@ var extractTracksInfo = function(items) {
   items.forEach(function(element) {
     // trick from https://stackoverflow.com/a/39333479 
     const sub = (({ name, uri }) => ({ name, uri }))(element);
-    console.log(sub);
     filtered.push(sub);
   });
   return filtered;
@@ -118,7 +117,6 @@ app.get('/arthur_search', function(req, res) {
       if (!error)
       {
         const filtered = extractTracksInfo(body.tracks.items);
-        console.log('poszting back filtered');
         res.send({
           filtered: filtered
         });
