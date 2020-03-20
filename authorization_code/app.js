@@ -32,6 +32,21 @@ var generateRandomString = function(length) {
   return text;
 };
 
+/**
+ * Extract relevant keys from Spotify API track map.
+ * Returns empty array if no tracks
+ */
+var extractTracksInfo = function(items) {
+  var filtered = []; // subset of api results
+  items.forEach(function(element) {
+    // trick from https://stackoverflow.com/a/39333479 
+    const sub = (({ name, uri }) => ({ name, uri }))(element);
+    console.log(sub);
+    filtered.push(sub);
+  });
+  return filtered;
+}
+
 var stateKey = 'spotify_auth_state';
 
 var global_token = '';
@@ -102,8 +117,11 @@ app.get('/arthur_search', function(req, res) {
     request.get(options, function(error, response, body) {
       if (!error)
       {
-        console.log('got the following tracks":');
-        body.tracks.items.forEach(function(element) { console.log(element.name);});
+        const filtered = extractTracksInfo(body.tracks.items);
+        console.log('poszting back filtered');
+        res.send({
+          filtered: filtered
+        });
       } else {
         console.log('fuckery in search call results:');
         console.log(error);
