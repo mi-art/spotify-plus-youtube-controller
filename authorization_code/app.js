@@ -72,13 +72,34 @@ app.get('/arthur_pause', function(req, res) {
           json: true,
         };
 
+        console.log("Pause?");
         // use the access token to access the Spotify Web API
         request.put(options, function(error, response, body) {
           // do stuff with error?
+          console.log("Pause.");
         });
 });
 
+// for now, only search on spotify (one day youtube too)
+app.get('/arthur_search', function(req, res) {
+  var access_token = global_token;
 
+  var search_input = req.query.search_input;
+  console.log(search_input);
+
+  var options = {
+    url: 'https://api.spotify.com/v1/search?query=' + encodeURIComponent(search_input) + '&type=track&offset=0&limit=3',
+    headers: { 'Authorization': 'Bearer ' + access_token },
+    json: true,
+  };
+  console.log(options);
+  // use the access token to access the Spotify Web API
+  request.get(options, function(error, response, body) {
+    console.log('got the following tracks');
+    body.tracks.items.forEach(function(element) { console.log(element.name);});
+  });
+
+});
 
 app.get('/callback', function(req, res) {
 

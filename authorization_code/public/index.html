@@ -30,6 +30,15 @@
         <button class="btn btn-default" id="obtain-new-token">Obtain new token using the refresh token</button>
         <h1>My arthur_pause button</h1>
         <button class="btn btn-default" id="arthur_pause">trigger /arthur_pause</button>
+        <h1>Search input</h1>
+				<div class="form-group">
+          <textarea class="form-control" id="search_input" rows="5" maxlength="500">harder better faster stronger</textarea>  <!-- <input> more suited -->
+				</div>
+				<p>
+					<button class="btn btn-lg btn-primary btn-success" id="start_search">Search it</button>
+				</p>
+				<div id="status"></div>
+			</div>
       </div>
     </div>
 
@@ -142,6 +151,18 @@
               url: '/arthur_pause',
             });
           }, false);
+
+          document.getElementById('start_search').addEventListener('click', function() {
+            var dadata = $('#search_input').val();
+            console.log(dadata);
+            $.ajax({
+              url: '/arthur_search',
+              data: {
+                'search_input': dadata
+              }
+            });
+          }, false);
+
         }
       })();
     </script>
