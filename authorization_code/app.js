@@ -85,20 +85,31 @@ app.get('/arthur_search', function(req, res) {
   var access_token = global_token;
 
   var search_input = req.query.search_input;
-  console.log(search_input);
-
-  var options = {
-    url: 'https://api.spotify.com/v1/search?query=' + encodeURIComponent(search_input) + '&type=track&offset=0&limit=3',
-    headers: { 'Authorization': 'Bearer ' + access_token },
-    json: true,
-  };
-  console.log(options);
-  // use the access token to access the Spotify Web API
-  request.get(options, function(error, response, body) {
-    console.log('got the following tracks');
-    body.tracks.items.forEach(function(element) { console.log(element.name);});
-  });
-
+  if (search_input == undefined)
+  {
+    res.redirect('/#' +
+    querystring.stringify({
+      error: 'fuckery_empty_query'
+    }));
+  } else {
+    console.log('Looking for: ' + search_input);
+    var options = {
+      url: 'https://api.spotify.com/v1/search?query=' + encodeURIComponent(search_input) + '&type=track&offset=0&limit=3',
+      headers: { 'Authorization': 'Bearer ' + access_token },
+      json: true,
+    };
+    // use the access token to access the Spotify Web API
+    request.get(options, function(error, response, body) {
+      if (!error)
+      {
+        console.log('got the following tracks":');
+        body.tracks.items.forEach(function(element) { console.log(element.name);});
+      } else {
+        console.log('fuckery in search call results:');
+        console.log(error);
+      }
+    });
+  }
 });
 
 app.get('/callback', function(req, res) {
