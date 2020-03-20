@@ -1,0 +1,1 @@
+/c/Program\ Files/Mozilla\ Firefox/firefox.exe localhost:8888 && node app.js
