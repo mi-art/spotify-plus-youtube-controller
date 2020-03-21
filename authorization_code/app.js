@@ -128,6 +128,27 @@ app.get('/arthur_search', function(req, res) {
   }
 });
 
+app.get('/arthur_play', function(req, res) {
+  var access_token = global_token;
+
+  var uri = req.query.uri;
+
+  var values = {
+    uris:[uri],
+  };
+  var options = {
+    url: 'https://api.spotify.com/v1/me/player/play',
+    headers: { 'Authorization': 'Bearer ' + access_token },
+    json: true,
+    body:values,
+  };
+
+  request.put(options, function(error, response, body) {
+    // do stuff with error?
+    console.log("Triggered: " + uri);
+  });
+});
+
 app.get('/callback', function(req, res) {
 
   // your application requests refresh and access tokens

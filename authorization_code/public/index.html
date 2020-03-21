@@ -82,6 +82,10 @@
       <p>{{arthur_result}}</p>
     </script> -->
 
+    <script id="play-button-template" type="text/x-handlebars-template">
+      <button class="btn btn-warning arthur_play_button" type="submit" value={{{uri}}}>Play</button>
+    </script>
+
     <script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/2.0.0-alpha.1/handlebars.min.js"></script>
     <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
     <script>
@@ -112,6 +116,10 @@
         // var searchResultsSource = document.getElementById('spotify-tracks-template').innerHTML,
         //     searchResultsTemplate = Handlebars.compile(searchResultsSource),
         var    searchResultsPlaceholder = document.getElementById('spotify-tracks');
+
+        var playButtonSource = document.getElementById('play-button-template').innerHTML,
+            playButtonTemplate = Handlebars.compile(playButtonSource);
+
         var params = getHashParams();
 
         var access_token = params.access_token,
@@ -176,6 +184,11 @@
                 'search_input': dadata
               }
             }).done(function(data) {
+
+              function quote(string_)
+              {
+                return '"' + string_ + '"';
+              }
               /** Update @param result_body html table with @param result_data array of objects. */
               function setResultTable(results_body, results_data)
               {
@@ -186,6 +199,10 @@
                     var cell = tr.insertCell();
                     cell.innerHTML = val;
                   });
+                   // hack until i know how to use handle quotes and {{}}. also to check if
+                   // non-escaped {{{uri}}} is OK. also is it stupid to have uri attached to
+                   // button that way?
+                  tr.insertCell().innerHTML = playButtonTemplate({uri:quote(element.uri)});
                   results_body.appendChild(tr);
                 });
               }
@@ -193,6 +210,18 @@
             });
           }, false);
 
+          // https://davidwalsh.name/event-delegate
+          document.getElementById("spotify-tracks").addEventListener("click", function(e) {
+              // e.target is the clicked element!
+              if(e.target && e.target.classList.contains("arthur_play_button")) {
+                $.ajax({
+                  url: '/arthur_play',
+                  data: {
+                    'uri': e.target.value
+                  }
+                })
+              }
+          });
         }
       })();
     </script>
