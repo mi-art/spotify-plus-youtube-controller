@@ -17,6 +17,36 @@ var client_id = '33586b0c8c344403969b1e5553969279'; // Your client id
 var client_secret = '560515e6eaf64f0abab59eb35652448a'; // Your secret
 var redirect_uri = 'http://localhost:8888/callback'; // Your redirect uri
 
+////////////////// YOUTUBE EXAMPLE //////////////////
+// initialize the Youtube API library
+const {google} = require('googleapis');
+const youtube = google.youtube({
+  version: 'v3',
+  auth: 'AIzaSyAxHmx63rVlGpFMMWP4UNH0-mV_Bwr8ez8',
+});
+var getYoutubeResults = function(query) {
+  // https://developers.google.com/youtube/v3/docs/search/list
+  const params = {
+    part: 'id,snippet',  // useless snippet?
+    q: query,
+    maxResults : 3,
+    type: ['video'],
+  };
+
+  youtube.search.list(params, (err, res) => {
+    if (err) {
+      console.error(err);
+      throw err;
+      }
+      console.log(res.data);
+      res.data.items.forEach((it) => {
+        console.log("https://www.youtube.com/watch?v=" + it.id.videoId);
+      })
+  });
+};
+getYoutubeResults('john talabot');
+/////////////////////////////////////////////////////
+
 /**
  * Generates a random string containing numbers and letters
  * @param  {number} length The length of the string
