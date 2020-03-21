@@ -73,26 +73,21 @@ app.get('/login', function(req, res) {
 });
 
 app.get('/arthur_pause', function(req, res) {
+  var access_token = global_token;
 
-  var code = req.query.code || null;
-  var state = req.query.state || null;
-  var storedState = req.cookies ? req.cookies[stateKey] : null;
+  var options = {
+    url: 'https://api.spotify.com/v1/me/player/pause',
+    headers: { 'Authorization': 'Bearer ' + access_token },
+    json: true,
+  };
 
-        var access_token = global_token;
-
-        var options = {
-          url: 'https://api.spotify.com/v1/me/player/pause',
-          headers: { 'Authorization': 'Bearer ' + access_token },
-          json: true,
-        };
-
-        console.log("Pause?");
-        // use the access token to access the Spotify Web API
-        request.put(options, function(error, response, body) {
-          // do stuff with error?
-          console.log("Pause.");
-          res.end();
-        });
+  console.log("Pause?");
+  // use the access token to access the Spotify Web API
+  request.put(options, function(error, response, body) {
+    // do stuff with error?
+    console.log("Pause.");
+    res.end();
+  });
 });
 
 // for now, only search on spotify (one day youtube too)
@@ -134,7 +129,7 @@ app.get('/arthur_play', function(req, res) {
   var access_token = global_token;
 
   var uri = req.query.uri;
-  console.log('arthur_play got ' + uri + ' at ' + new Date().toLocaleTimeString('fr-FR'));
+  console.log('Triggering ' + uri + ' at ' + new Date().toLocaleTimeString('fr-FR'));
 
   var values = {
     uris:[uri],
@@ -197,7 +192,7 @@ app.get('/callback', function(req, res) {
 
         // use the access token to access the Spotify Web API
         request.get(options, function(error, response, body) {
-          console.log(body);
+          console.log('Connection of user ' + body.email);
         });
 
         // we can also pass the token to the browser to make requests from there
