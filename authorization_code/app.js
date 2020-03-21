@@ -91,6 +91,7 @@ app.get('/arthur_pause', function(req, res) {
         request.put(options, function(error, response, body) {
           // do stuff with error?
           console.log("Pause.");
+          res.end();
         });
 });
 
@@ -124,6 +125,7 @@ app.get('/arthur_search', function(req, res) {
         console.log('fuckery in search call results:');
         console.log(error);
       }
+      res.end();
     });
   }
 });
@@ -132,6 +134,7 @@ app.get('/arthur_play', function(req, res) {
   var access_token = global_token;
 
   var uri = req.query.uri;
+  console.log('arthur_play got ' + uri + ' at ' + new Date().toLocaleTimeString('fr-FR'));
 
   var values = {
     uris:[uri],
@@ -145,7 +148,7 @@ app.get('/arthur_play', function(req, res) {
 
   request.put(options, function(error, response, body) {
     // do stuff with error?
-    console.log("Triggered: " + uri);
+    res.end();
   });
 });
 
