@@ -12,6 +12,7 @@ var request = require('request'); // "Request" library
 var cors = require('cors');
 var querystring = require('querystring');
 var cookieParser = require('cookie-parser');
+var async = require("async");
 
 var client_id = '33586b0c8c344403969b1e5553969279'; // Your client id
 var client_secret = '560515e6eaf64f0abab59eb35652448a'; // Your secret
@@ -24,7 +25,21 @@ const youtube = google.youtube({
   version: 'v3',
   auth: 'AIzaSyAxHmx63rVlGpFMMWP4UNH0-mV_Bwr8ez8',
 });
-var getYoutubeResults = function(query) {
+
+var extractVideoInfo = function(items)
+{
+  var filtered = []; // subset of api results
+  items.forEach(function(element) {
+    const sub = {
+      name: element.snippet.title,
+      url: "https://www.youtube.com/watch?v=" + element.id.videoId
+    };
+    filtered.push(sub);
+  });
+  return filtered;
+};
+
+var getYoutubeResults = function(query, callback_func) {
   // https://developers.google.com/youtube/v3/docs/search/list
   const params = {
     part: 'id,snippet',  // useless snippet?
@@ -36,15 +51,12 @@ var getYoutubeResults = function(query) {
   youtube.search.list(params, (err, res) => {
     if (err) {
       console.error(err);
-      throw err;
-      }
-      console.log(res.data);
-      res.data.items.forEach((it) => {
-        console.log("https://www.youtube.com/watch?v=" + it.id.videoId);
-      })
+      throw err;  // should it be: callback_func(err); instead?????
+    }
+    var items = extractVideoInfo(res.data.items);
+    callback_func(null, items);
   });
 };
-getYoutubeResults('john talabot');
 /////////////////////////////////////////////////////
 
 /**
@@ -122,8 +134,8 @@ app.get('/arthur_pause', function(req, res) {
 
 // for now, only search on spotify (one day youtube too)
 app.get('/arthur_search', function(req, res) {
-  var access_token = global_token;
 
+  // COMMON
   var search_input = req.query.search_input;
   if (search_input == undefined || search_input.trim().length == 0)
   {
@@ -133,6 +145,23 @@ app.get('/arthur_search', function(req, res) {
     res.end();
   } else {
     console.log('Looking for: ' + search_input);
+
+    // YOUTUBE
+
+    async.parallel([
+        getYoutubeResults.bind(null, search_input),  // null for "this"
+      ],
+      function(err, results) {
+        console.log('received in async parallel callaback: ');
+        console.log(results);
+        res.end();
+    });
+
+
+/*
+
+    // SPOTIFY
+    var access_token = global_token;
     var options = {
       url: 'https://api.spotify.com/v1/search?query=' + encodeURIComponent(search_input) + '&type=track&offset=0&limit=3',
       headers: { 'Authorization': 'Bearer ' + access_token },
@@ -151,7 +180,8 @@ app.get('/arthur_search', function(req, res) {
         console.log(error);
       }
       res.end();
-    });
+    }); 
+    */
   }
 });
 
