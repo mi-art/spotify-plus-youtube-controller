@@ -125,12 +125,12 @@ app.get('/arthur_search', function(req, res) {
   var access_token = global_token;
 
   var search_input = req.query.search_input;
-  if (search_input == undefined)
+  if (search_input == undefined || search_input.trim().length == 0)
   {
-    res.redirect('/#' +
-    querystring.stringify({
-      error: 'fuckery_empty_query'
-    }));
+    res.send({
+      error: 'Empty query'
+    });
+    res.end();
   } else {
     console.log('Looking for: ' + search_input);
     var options = {

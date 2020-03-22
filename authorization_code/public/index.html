@@ -183,29 +183,35 @@
                 'search_input': dadata
               }
             }).done(function(data) {
-
-              function quote(string_)
+              if (data.error)
               {
-                return '"' + string_ + '"';
+                alert(data.error);
               }
-              /** Update @param result_body html table with @param result_data array of objects. */
-              function setResultTable(results_body, results_data)
+              else
               {
-                results_body.innerHTML = '';  // hard reset
-                results_data.forEach(function(element){
-                  var tr = results_body.insertRow();
-                  Object.values(element).forEach((val) => {
-                    var cell = tr.insertCell();
-                    cell.innerHTML = val;
+                function quote(string_)
+                {
+                  return '"' + string_ + '"';
+                }
+                /** Update @param result_body html table with @param result_data array of objects. */
+                function setResultTable(results_body, results_data)
+                {
+                  results_body.innerHTML = '';  // hard reset
+                  results_data.forEach(function(element){
+                    var tr = results_body.insertRow();
+                    Object.values(element).forEach((val) => {
+                      var cell = tr.insertCell();
+                      cell.innerHTML = val;
+                    });
+                    // hack until i know how to use handle quotes and {{}}. also to check if
+                    // non-escaped {{{uri}}} is OK. also is it stupid to have uri attached to
+                    // button that way?
+                    tr.insertCell().innerHTML = playButtonTemplate({uri:quote(element.uri)});
+                    results_body.appendChild(tr);
                   });
-                   // hack until i know how to use handle quotes and {{}}. also to check if
-                   // non-escaped {{{uri}}} is OK. also is it stupid to have uri attached to
-                   // button that way?
-                  tr.insertCell().innerHTML = playButtonTemplate({uri:quote(element.uri)});
-                  results_body.appendChild(tr);
-                });
+                }
+                setResultTable(searchResultsPlaceholder, data.filtered);
               }
-              setResultTable(searchResultsPlaceholder, data.filtered);
             });
           }, false);
 
