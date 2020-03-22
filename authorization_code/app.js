@@ -32,18 +32,18 @@ var extractVideoInfo = function(items)
   items.forEach(function(element) {
     const sub = {
       name: element.snippet.title,
-      url: "https://www.youtube.com/watch?v=" + element.id.videoId
+      uri: element.id.videoId,
     };
     filtered.push(sub);
   });
   return filtered;
 };
 
-var getYoutubeResults = function(query, callback_func) {
+var getYoutubeResults = function(search_input, callback_func) {
   // https://developers.google.com/youtube/v3/docs/search/list
   const params = {
     part: 'id,snippet',  // useless snippet?
-    q: query,
+    q: search_input,
     maxResults : 3,
     type: ['video'],
   };
@@ -132,6 +132,28 @@ app.get('/arthur_pause', function(req, res) {
   });
 });
 
+var getSpotifyResults = function(search_input, callback_func) {
+  // SPOTIFY
+  var access_token = global_token;
+  var options = {
+    url: 'https://api.spotify.com/v1/search?query=' + encodeURIComponent(search_input) + '&type=track&offset=0&limit=3',
+    headers: { 'Authorization': 'Bearer ' + access_token },
+    json: true,
+  };
+  // use the access token to access the Spotify Web API
+  request.get(options, function(error, response, body) {
+    if (!error)
+    {
+      const filtered = extractTracksInfo(body.tracks.items);
+      callback_func(null, filtered);
+    } else {
+      console.log('fuckery in search call results:');
+      console.log(error);
+      callback_func(error);
+    }
+  });
+}
+
 // for now, only search on spotify (one day youtube too)
 app.get('/arthur_search', function(req, res) {
 
@@ -150,38 +172,16 @@ app.get('/arthur_search', function(req, res) {
 
     async.parallel([
         getYoutubeResults.bind(null, search_input),  // null for "this"
+        getSpotifyResults.bind(null, search_input),
       ],
       function(err, results) {
-        console.log('received in async parallel callaback: ');
-        console.log(results);
-        res.end();
-    });
-
-
-/*
-
-    // SPOTIFY
-    var access_token = global_token;
-    var options = {
-      url: 'https://api.spotify.com/v1/search?query=' + encodeURIComponent(search_input) + '&type=track&offset=0&limit=3',
-      headers: { 'Authorization': 'Bearer ' + access_token },
-      json: true,
-    };
-    // use the access token to access the Spotify Web API
-    request.get(options, function(error, response, body) {
-      if (!error)
-      {
-        const filtered = extractTracksInfo(body.tracks.items);
         res.send({
-          filtered: filtered
+          filtered:{
+            youtube: results[0],
+            spotify: results[1],
+          }
         });
-      } else {
-        console.log('fuckery in search call results:');
-        console.log(error);
-      }
-      res.end();
-    }); 
-    */
+    });
   }
 });
 

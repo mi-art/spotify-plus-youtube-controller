@@ -81,8 +81,12 @@
       <p>{{arthur_result}}</p>
     </script> -->
 
-    <script id="play-button-template" type="text/x-handlebars-template">
-      <button class="btn btn-warning arthur_play_button" type="submit" value={{{uri}}}>Play</button>
+    <script id="play-button-spotify-template" type="text/x-handlebars-template">
+      <button class="btn btn-success arthur_play_spotify_button" type="submit" value={{{uri}}}>Play</button>
+    </script>
+
+    <script id="play-button-youtube-template" type="text/x-handlebars-template">
+      <button class="btn btn-danger arthur_play_youtube_button" type="submit" value={{{uri}}}>Play</button>
     </script>
 
     <script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/2.0.0-alpha.1/handlebars.min.js"></script>
@@ -112,12 +116,12 @@
             oauthTemplate = Handlebars.compile(oauthSource),
             oauthPlaceholder = document.getElementById('oauth');
 
-        // var searchResultsSource = document.getElementById('spotify-tracks-template').innerHTML,
-        //     searchResultsTemplate = Handlebars.compile(searchResultsSource),
         var    searchResultsPlaceholder = document.getElementById('spotify-tracks');
 
-        var playButtonSource = document.getElementById('play-button-template').innerHTML,
-            playButtonTemplate = Handlebars.compile(playButtonSource);
+        var playButtonTemplate = {
+          spotify: Handlebars.compile(document.getElementById('play-button-spotify-template').innerHTML),
+          youtube: Handlebars.compile(document.getElementById('play-button-youtube-template').innerHTML),
+        };
 
         var params = getHashParams();
 
@@ -193,22 +197,25 @@
                 {
                   return '"' + string_ + '"';
                 }
-                /** Update @param result_body html table with @param result_data array of objects. */
+                /** Update @param result_body html table with @param result_data, map of array of items. */
                 function setResultTable(results_body, results_data)
                 {
                   results_body.innerHTML = '';  // hard reset
-                  results_data.forEach(function(element){
-                    var tr = results_body.insertRow();
-                    Object.values(element).forEach((val) => {
-                      var cell = tr.insertCell();
-                      cell.innerHTML = val;
+                  for (var platform in results_data)
+                  {
+                    results_data[platform].forEach(function(element){
+                      var tr = results_body.insertRow();
+                      Object.values(element).forEach((val) => {
+                        var cell = tr.insertCell();
+                        cell.innerHTML = val;
+                      });
+                      // hack until i know how to use handle quotes and {{}}. also to check if
+                      // non-escaped {{{uri}}} is OK. also is it stupid to have uri attached to
+                      // button that way?
+                      tr.insertCell().innerHTML = playButtonTemplate[platform]({uri:quote(element.uri)});
+                      results_body.appendChild(tr);
                     });
-                    // hack until i know how to use handle quotes and {{}}. also to check if
-                    // non-escaped {{{uri}}} is OK. also is it stupid to have uri attached to
-                    // button that way?
-                    tr.insertCell().innerHTML = playButtonTemplate({uri:quote(element.uri)});
-                    results_body.appendChild(tr);
-                  });
+                  }
                 }
                 setResultTable(searchResultsPlaceholder, data.filtered);
               }
@@ -218,14 +225,24 @@
           // https://davidwalsh.name/event-delegate
           document.getElementById("spotify-tracks").addEventListener("click", function(e) {
               // e.target is the clicked element!
-              if(e.target && e.target.classList.contains("arthur_play_button")) {
-                $.ajax({
-                  url: '/arthur_play',
-                  data: {
-                    'uri': e.target.value
-                  }
-                })
-              }
+              if(e.target)
+              {
+                if (e.target.classList.contains("arthur_play_spotify_button")) {
+                  $.ajax({
+                    url: '/arthur_play',
+                    data: {
+                      'uri': e.target.value
+                    }
+                  })
+                } else if (e.target.classList.contains("arthur_play_youtube_button")) {
+                  $.ajax({
+                    url: '/arthur_youtube_play',
+                    data: {
+                      'uri': e.target.value
+                    }
+                  })
+                }
+            }
           });
         }
       })();
