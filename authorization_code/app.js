@@ -185,6 +185,14 @@ app.get('/arthur_search', function(req, res) {
   }
 });
 
+/**
+ * Play input song on spotify.
+ *
+ * FIXME: doesn't always work when spotify app is sleeping ..  in that case,
+ * GET https://api.spotify.com/v1/me/player returns nothing
+ * in that case, we need to instanciate the webplayback stuff or
+ * simply warn user to start his spotify
+ */
 app.get('/arthur_play', function(req, res) {
   var access_token = global_token;
 
