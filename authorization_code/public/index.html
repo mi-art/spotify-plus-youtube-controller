@@ -1,10 +1,10 @@
 <!doctype html>
 <html>
   <head>
-    <title>Example of the Authorization Code flow with Spotify</title>
+    <title>YouTify</title>
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
     <style type="text/css">
-      #login, #loggedin {
+      #login, #loggedin, #loggedin_details {
         display: none;
       }
       .text-overflow {
@@ -13,7 +13,7 @@
         white-space: nowrap;
         width: 500px;
       }
-      input{
+      .input-group {
         width: 100%;
       }
     </style>
@@ -21,24 +21,26 @@
 
   <body>
     <div class="container">
+      <h3>Spotify and Youtube, on the same page</h3>
+      <hr class="my-4">
       <div id="login">
-        <h1>This is an example of the Authorization Code flow</h1>
         <a href="/login" class="btn btn-primary">Log in with Spotify</a>
       </div>
-      <div id="loggedin">
+      <div id="loggedin_details">
         <div id="user-profile">
         </div>
         <div id="oauth">
         </div>
         <button class="btn btn-default" id="obtain-new-token">Obtain new token using the refresh token</button>
+      </div>
+      <div id="loggedin">
         <button class="btn btn-default" id="arthur_pause">Pause spotify</button>
-        <h1>Search</h1>
-        <div class="form-group">
-          <input id="search_input" value="harder better faster stronger"></input>
+        <div class="input-group mb-3">
+          <input type="text" class="form-control" placeholder="Track's title" aria-label="Track's title" aria-describedby="basic-addon2" id="search_input">
+          <div class="input-group-append">
+            <button class="btn btn-outline-secondary" type="button" id="start_search">Search</button>
+          </div>
         </div>
-        <p>
-          <button class="btn btn-lg btn-primary btn-success" id="start_search">Search it</button>
-        </p>
         <table class="table table-striped">
           <tbody id="spotify-tracks"></tbody>
         </table>
@@ -49,7 +51,7 @@
     </div>
 
     <script id="user-profile-template" type="text/x-handlebars-template">
-      <h1>Logged in as {{display_name}}</h1>
+      <p>Logged in on spotify as {{display_name}}</p>
       <!-- <div class="media">
         <div class="pull-left">
           <img class="media-object" width="150" src="{{images.0.url}}" />
@@ -75,11 +77,6 @@
         <dt>Refresh token</dt><dd class="text-overflow">{{refresh_token}}</dd>
       </dl>
     </script>
-
-    <!-- <script id="spotify-tracks-template" type="text/x-handlebars-template">
-      <h2>Search results</h2>
-      <p>{{arthur_result}}</p>
-    </script> -->
 
     <script id="play-button-spotify-template" type="text/x-handlebars-template">
       <button class="btn btn-success arthur_play_spotify_button" type="submit" value={{{uri}}}>Play</button>
@@ -114,12 +111,12 @@
       //    after the API code downloads.
       function onYouTubeIframeAPIReady() {
         arthur_vars.player = new YT.Player('youtube-player', {
-          height: '360',
-          width: '640',
+          height: 'auto',
+          width: '100%',
           videoId: arthur_vars.firstVideo,
           events: {
             'onReady': onPlayerReady,
-          }
+          },
         });
 
         // clear out firstVideo to have clear error if this was to be called again.
@@ -272,10 +269,9 @@
                   {
                     results_data[platform].forEach(function(element){
                       var tr = results_body.insertRow();
-                      Object.values(element).forEach((val) => {
-                        var cell = tr.insertCell();
-                        cell.innerHTML = val;
-                      });
+                      var cell = tr.insertCell();
+                      cell.innerHTML = element.name;
+
                       // hack until i know how to use handle quotes and {{}}. also to check if
                       // non-escaped {{{uri}}} is OK. also is it stupid to have uri attached to
                       // button that way?
