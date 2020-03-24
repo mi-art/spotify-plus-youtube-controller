@@ -171,14 +171,14 @@ app.get('/arthur_search', function(req, res) {
     // YOUTUBE
 
     async.parallel([
-        getYoutubeResults.bind(null, search_input),  // null for "this"
-        getSpotifyResults.bind(null, search_input),
+      getSpotifyResults.bind(null, search_input), // null for "this"
+      getYoutubeResults.bind(null, search_input),
       ],
       function(err, results) {
         res.send({
           filtered:{
-            youtube: results[0],
-            spotify: results[1],
+            spotify: results[0],
+            youtube: results[1],
           }
         });
     });
