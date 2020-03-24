@@ -186,6 +186,33 @@ app.get('/arthur_search', function(req, res) {
 });
 
 /**
+ * Create a promise that is successful if there is an active 
+ * spotify device, and fails if no active device is present.
+ */
+function playable_device()
+{
+  var promise = new Promise(function(resolve, reject) {
+    var options = {
+      url: 'https://api.spotify.com/v1/me/player',
+      headers: { 'Authorization': 'Bearer ' + global_token },
+      json: true,
+    };
+    request.get(options, function(error, response, body) {
+      if (body == undefined)
+      {
+        reject('No device available');
+      }
+      else
+      {
+        var result = {device_name: body.device.name};
+        resolve(result);
+      }
+    });
+  });
+  return promise;
+};
+
+/**
  * Play input song on spotify.
  *
  * FIXME: doesn't always work when spotify app is sleeping ..  in that case,
