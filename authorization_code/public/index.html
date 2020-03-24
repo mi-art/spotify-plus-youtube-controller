@@ -303,7 +303,10 @@
                     url: '/arthur_play',
                     data: {
                       'uri': e.target.value
-                    }
+                    },
+                    error: function(XMLHttpRequest, textStatus, errorThrown) {
+                        alert(XMLHttpRequest.responseText);
+                    },
                   })
                   stopVideo();
                 } else if (e.target.classList.contains("arthur_play_youtube_button")) {

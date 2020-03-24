@@ -186,8 +186,8 @@ app.get('/arthur_search', function(req, res) {
 });
 
 /**
- * Create a promise that is successful if there is an active 
- * spotify device, and fails if no active device is present.
+ * Create a promise that is successful if there is an active
+ * spotify device and returns its name, and fails otherwise.
  */
 function playable_device()
 {
@@ -204,8 +204,7 @@ function playable_device()
       }
       else
       {
-        var result = {device_name: body.device.name};
-        resolve(result);
+        resolve(body.device.name);
       }
     });
   });
@@ -215,29 +214,36 @@ function playable_device()
 /**
  * Play input song on spotify.
  *
- * FIXME: doesn't always work when spotify app is sleeping ..  in that case,
- * GET https://api.spotify.com/v1/me/player returns nothing
- * in that case, we need to instanciate the webplayback stuff or
- * simply warn user to start his spotify
+ * Doesn't always work when spotify app is sleeping ..  In that case,
+ * return an error 503 and instruct user to refresh his spotify device.
+ *
+ * TODO: instanciate the spotify webplayback stuff and play there
  */
 app.get('/arthur_play', function(req, res) {
-  var access_token = global_token;
+  playable_device().then(function (result) {
+    var access_token = global_token;
 
-  var uri = req.query.uri;
-  console.log('Triggering ' + uri + ' at ' + new Date().toLocaleTimeString('fr-FR'));
+    var uri = req.query.uri;
+    console.log('Triggering ' + uri + ' at ' + new Date().toLocaleTimeString('fr-FR'));
 
-  var values = {
-    uris:[uri],
-  };
-  var options = {
-    url: 'https://api.spotify.com/v1/me/player/play',
-    headers: { 'Authorization': 'Bearer ' + access_token },
-    json: true,
-    body:values,
-  };
+    var values = {
+      uris:[uri],
+    };
+    var options = {
+      url: 'https://api.spotify.com/v1/me/player/play',
+      headers: { 'Authorization': 'Bearer ' + access_token },
+      json: true,
+      body:values,
+    };
 
-  request.put(options, function(error, response, body) {
-    // do stuff with error?
+    console.log('There is a device! Lets play on ' + result);
+    request.put(options, function(error, response, body) {
+      // do stuff with error?
+      res.end();
+    });
+  }).catch(function (error) {
+    console.log('Spotify device fell asleep');
+    res.status(503).send('Spotify device fell asleep, wake him up playing something!')
     res.end();
   });
 });
