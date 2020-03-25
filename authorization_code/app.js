@@ -126,9 +126,9 @@ app.get('/arthur_pause', function(req, res) {
   console.log("Pause?");
   // use the access token to access the Spotify Web API
   request.put(options, function(error, response, body) {
-    // do stuff with error?
-    console.log("Pause.");
-    res.end();
+      // response.statusCode should be checked
+      console.log("Pause.");
+      res.end();
   });
 });
 
@@ -210,6 +210,25 @@ function playable_device()
   });
   return promise;
 };
+
+app.get('/spotify_active_device', function(req,res) {
+  if (global_token == '')
+  {
+    // this should be in a generic method generating the auth part
+    // and used for every url
+    res.status(401).send('Not logged in Spotify');
+  }
+  else
+  {
+    playable_device().then(function (dev_name) {
+      res.send(dev_name);
+      res.end();
+    }).catch(function (error) {
+      res.send("NO DEVICE");
+      res.end();
+    })
+  }
+});
 
 /**
  * Play input song on spotify.

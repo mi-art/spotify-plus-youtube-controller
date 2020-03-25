@@ -4,7 +4,7 @@
     <title>YouTify</title>
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
     <style type="text/css">
-      #login, #loggedin, #loggedin_details, #youtube-player {
+      #login, #loggedin, #loggedin_debugging, #youtube-player {
         display: none;
       }
       .text-overflow {
@@ -22,11 +22,12 @@
   <body>
     <div class="container">
       <h3>Spotify and Youtube, on the same page</h3>
-      <hr class="my-4">
       <div id="login">
+        <hr class="my-4">
         <a href="/login" class="btn btn-outline-success">Log in with your Spotify account</a>
       </div>
-      <div id="loggedin_details">
+      <div id="loggedin_debugging">
+        <button class="btn btn-outline-success" id="arthur_pause">Pause spotify</button>
         <div id="user-profile">
         </div>
         <div id="oauth">
@@ -34,7 +35,10 @@
         <button class="btn btn-default" id="obtain-new-token">Obtain new token using the refresh token</button>
       </div>
       <div id="loggedin">
-        <button class="btn btn-outline-success" id="arthur_pause">Pause spotify</button>
+        <div class="card border-success mb-3">
+          <div class="card-body text-success" id="spotify-status">
+          </div>
+        </div>
         <hr class="my-4">
         <form id="track_search_form">
           <input type="text" class="form-control" placeholder="Type track's title and press enter"
@@ -70,6 +74,11 @@
           </dl>
         </div>
       </div> -->
+    </script>
+
+    <script id="spotify-status-template" type="text/x-handlebars-template">
+      <p class="card-text">Spotify playback on <b>{{spotify_active_device}}</b>. If your device is not showing up,
+        wake it up by playing some stuff directly on it first.</p>
     </script>
 
     <script id="oauth-template" type="text/x-handlebars-template">
@@ -194,6 +203,32 @@
         var playButtonTemplate = Handlebars.compile(
           document.getElementById('play_or_queue-button-common-template').innerHTML);
 
+        var spotifyStatusTemplate = Handlebars.compile((document.getElementById('spotify-status-template').innerHTML));
+        var spotifyStatusPlaceholder = document.getElementById('spotify-status');
+
+        var timer;
+        function updateSpotifyStatus()
+        {
+          $.ajax({
+            url: '/spotify_active_device',
+            error: function(XMLHttpRequest, textStatus, errorThrown) {
+              cancelActivityRefresh();
+            },
+          }).done(function(data) {
+            spotifyStatusPlaceholder.innerHTML = spotifyStatusTemplate({
+              spotify_active_device:data
+            });
+          });
+        }
+        function startActivityRefresh() {
+          const refresh_rate_seconds = 30;
+          timer = setInterval(updateSpotifyStatus, refresh_rate_seconds*1000)
+        }
+        function cancelActivityRefresh() {
+          clearInterval(timer);
+        }
+
+
         var params = getHashParams();
 
         var access_token = params.access_token,
@@ -222,6 +257,10 @@
                   $('#loggedin').show();
                 }
             });
+
+            startActivityRefresh(); // 1st to create timer
+            updateSpotifyStatus(); // second, to be sure timer exist when it has to be cancelled
+
           } else {
               // render initial screen
               $('#login').show();
