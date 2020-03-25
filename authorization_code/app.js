@@ -248,6 +248,10 @@ app.get('/arthur_play', function(req, res) {
   });
 });
 
+app.get('/arthur_queue', function(req, res) {
+  res.status(501).send('Queuing not implemented yet.')
+});
+
 app.get('/callback', function(req, res) {
 
   // your application requests refresh and access tokens

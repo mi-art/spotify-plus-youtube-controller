@@ -80,13 +80,10 @@
       </dl>
     </script>
 
-    <script id="play-button-spotify-template" type="text/x-handlebars-template">
-      <button class="btn btn-outline-success arthur_play_spotify_button" type="submit" value={{{uri}}}>Play</button>
+    <script id="play_or_queue-button-common-template" type="text/x-handlebars-template">
+      <button class="btn {{button_style}} {{platform_and_action}}" type="submit" value={{uri}}>{{label}}</button>
     </script>
 
-    <script id="play-button-youtube-template" type="text/x-handlebars-template">
-      <button class="btn btn-outline-danger arthur_play_youtube_button" type="submit" value={{{uri}}}>Play</button>
-    </script>
 
     <script>
       // https://stackoverflow.com/a/8348725 about globals
@@ -194,10 +191,8 @@
 
         var searchResultsPlaceholder = document.getElementById('spotify-tracks');
 
-        var playButtonTemplate = {
-          spotify: Handlebars.compile(document.getElementById('play-button-spotify-template').innerHTML),
-          youtube: Handlebars.compile(document.getElementById('play-button-youtube-template').innerHTML),
-        };
+        var playButtonTemplate = Handlebars.compile(
+          document.getElementById('play_or_queue-button-common-template').innerHTML);
 
         var params = getHashParams();
 
@@ -272,10 +267,6 @@
               }
               else
               {
-                function quote(string_)
-                {
-                  return '"' + string_ + '"';
-                }
                 /** Update @param result_body html table with @param result_data, map of array of items. */
                 function setResultTable(results_body, results_data)
                 {
@@ -284,18 +275,40 @@
                   {
                     results_data[platform].forEach(function(element){
                       var tr = results_body.insertRow();
+
+                      // Title
                       var cell = tr.insertCell();
                       cell.innerHTML = element.name;
                       cell.style.verticalAlign = "middle";
+                      const actions = {spotify:'arthur_play_spotify_button', youtube:'arthur_play_youtube_button'};
+                      const buttons = {spotify:'btn-outline-success', youtube:'btn-outline-danger'};
 
-                      // hack until i know how to use handle quotes and {{}}. also to check if
-                      // non-escaped {{{uri}}} is OK. also is it stupid to have uri attached to
-                      // button that way?
+                      // Play button
                       var btn_cell = tr.insertCell();
-                      btn_cell.innerHTML = playButtonTemplate[platform]({uri:quote(element.uri)});
+                      btn_cell.innerHTML = playButtonTemplate({
+                        uri:element.uri,
+                        platform_and_action:actions[platform],
+                        label: 'Play',
+                        button_style: buttons[platform],
+                      });
+
                       btn_cell.setAttribute("align", "right");
                       btn_cell.style.verticalAlign = "middle";
 
+                      // Queue button
+                      btn_cell = tr.insertCell();
+                      if (platform == 'spotify')
+                      {
+                        btn_cell.innerHTML = playButtonTemplate({
+                          uri:element.uri,
+                          platform_and_action:'arthur_queue_spotify_button',
+                          label: 'Queue',
+                          button_style: buttons[platform],
+                        });
+
+                        btn_cell.setAttribute("align", "right");
+                        btn_cell.style.verticalAlign = "middle";
+                      }
                       results_body.appendChild(tr);
                     });
                   }
@@ -307,12 +320,26 @@
 
           // https://davidwalsh.name/event-delegate
           document.getElementById("spotify-tracks").addEventListener("click", function(e) {
-              // e.target is the clicked element!
-              if(e.target)
+            // e.target is the clicked element!
+            if(e.target)
+            {
+              // Check which button was clicked
+              var btnClass = null;
+              ["arthur_play_spotify_button", "arthur_queue_spotify_button", "arthur_play_youtube_button"].forEach(value => {
+                if (e.target.classList.contains(value)) {
+                  btnClass = value;
+                }
+              });
+
+              if (btnClass)
               {
-                if (e.target.classList.contains("arthur_play_spotify_button")) {
+                if (["arthur_play_spotify_button", "arthur_queue_spotify_button"].includes(btnClass)) {
+                  var url = {
+                    arthur_play_spotify_button:'/arthur_play',
+                    arthur_queue_spotify_button:'/arthur_queue',
+                  };
                   $.ajax({
-                    url: '/arthur_play',
+                    url: url[btnClass],
                     data: {
                       'uri': e.target.value
                     },
@@ -321,7 +348,7 @@
                     },
                   })
                   stopVideo();
-                } else if (e.target.classList.contains("arthur_play_youtube_button")) {
+                } else if (btnClass == "arthur_play_youtube_button") {
                   // all the playback state should be improved:
                   // - triggering spotify should add the track to the queue and then swith to it
                   // - when youtube video finishes, spotify should start again
@@ -330,6 +357,7 @@
                     url: '/arthur_pause',
                   });
                 }
+              }
             }
           });
         }
