@@ -281,11 +281,16 @@
                       var tr = results_body.insertRow();
                       var cell = tr.insertCell();
                       cell.innerHTML = element.name;
+                      cell.style.verticalAlign = "middle";
 
                       // hack until i know how to use handle quotes and {{}}. also to check if
                       // non-escaped {{{uri}}} is OK. also is it stupid to have uri attached to
                       // button that way?
-                      tr.insertCell().innerHTML = playButtonTemplate[platform]({uri:quote(element.uri)});
+                      var btn_cell = tr.insertCell();
+                      btn_cell.innerHTML = playButtonTemplate[platform]({uri:quote(element.uri)});
+                      btn_cell.setAttribute("align", "right");
+                      btn_cell.style.verticalAlign = "middle";
+
                       results_body.appendChild(tr);
                     });
                   }
