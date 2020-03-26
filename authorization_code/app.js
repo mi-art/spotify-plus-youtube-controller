@@ -233,7 +233,7 @@ app.get('/spotify_active_device', function(req,res) {
 /** Generate option dict to pass to requests */
 function spotify_call_options(url) {
   return {
-    url: 'https://api.spotify.com/v1/me/player/play',
+    url: url,
     headers: { 'Authorization': 'Bearer ' + global_token },
     json: true,
   };
@@ -260,7 +260,9 @@ app.get('/arthur_play', function(req, res) {
 
     console.log('There is a device! Lets play on ' + result);
     request.put(options, function(error, response, body) {
-      // do stuff with error?
+      if (!(!error && response.statusCode === 204)) {
+        res.status(500).send('bloody hell');
+      }
       res.end();
     });
   }).catch(function (error) {
@@ -270,8 +272,63 @@ app.get('/arthur_play', function(req, res) {
   });
 });
 
+/*
+ * Add track to queue and skip playback to it.
+ *
+ * Note: Won't work if there was already some stuff in the queue.
+ *
+ * TODOs:
+ *  - if many tracks in queue, we could clear it first, or even do next until reaching the track etc..
+ *    we could also add a UI widget selecting the action to perform on spotify play button
+ *  - Not done, but from  API doc"Due to the asynchronous nature of the issuance of the command,
+ *   you should use the Get Information About The User’s Current Playback to check that your issued
+ *   command was handled correctly by the player."
+*/
 app.get('/arthur_queue', function(req, res) {
-  res.status(501).send('Queuing not implemented yet.')
+  var uri = req.query.uri;
+
+  playable_device().then(function (result) {
+    async.series([
+      function(callback) {
+        var options = {
+          url: 'https://api.spotify.com/v1/me/player/queue?uri=' + uri,
+          headers: { 'Authorization': 'Bearer ' + global_token },
+          json: true,
+        };
+
+        console.log('Queue ' + uri);
+
+        request.post(options, function(error, response, body) {
+          if (!error && response.statusCode === 204) {
+            callback();
+          } else {
+            // question: does body.error.message will always be there?
+            callback('queuing failed: ' + body.error.message);
+          }
+        });
+      },
+      function(callback) {
+        console.log('Next');
+        var options = spotify_call_options('https://api.spotify.com/v1/me/player/next');
+        request.post(options, function(error, response, body) {
+          if (!error && response.statusCode === 204) {
+            callback();
+          } else {
+            callback('nexting failed: ' + body.error.message);
+          }
+        });
+      },
+    ]).catch(function (error) {
+      console.log('something went wrong');
+      console.log(error);
+      res.status(500).send(error);
+    })
+  }).catch(function (error) {
+    // Todo: add the sleepy error
+    console.log('Catch of the main promise: ',error)
+  }).finally(function (){
+    res.end();
+  });
 });
 
 app.get('/callback', function(req, res) {
