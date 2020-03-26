@@ -242,6 +242,12 @@ function spotify_call_options(url) {
   };
 }
 
+function sleepy_error(res)
+{
+  console.log('Spotify device fell asleep');
+  res.status(503).send('Spotify device fell asleep, wake him up playing something!')
+}
+
 /**
  * Play input song on spotify.
  *
@@ -269,8 +275,7 @@ app.get('/arthur_play', function(req, res) {
       res.end();
     });
   }).catch(function (error) {
-    console.log('Spotify device fell asleep');
-    res.status(503).send('Spotify device fell asleep, wake him up playing something!')
+    sleepy_error(res);
     res.end();
   });
 });
@@ -327,8 +332,7 @@ app.get('/arthur_queue', function(req, res) {
       res.status(500).send(error);
     })
   }).catch(function (error) {
-    // Todo: add the sleepy error
-    console.log('Catch of the main promise: ',error)
+    sleepy_error(res);
   }).finally(function (){
     res.end();
   });
