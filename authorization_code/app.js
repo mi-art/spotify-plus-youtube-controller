@@ -81,8 +81,11 @@ var generateRandomString = function(length) {
 var extractTracksInfo = function(items) {
   var filtered = []; // subset of api results
   items.forEach(function(element) {
-    // trick from https://stackoverflow.com/a/39333479 
-    const sub = (({ name, uri }) => ({ name, uri }))(element);
+    const artists_str = element.artists.map(a => a.name).join(", ");
+    const sub = {
+      uri: element.uri,
+      name: element.name + ' by ' + artists_str,
+    };
     filtered.push(sub);
   });
   return filtered;
