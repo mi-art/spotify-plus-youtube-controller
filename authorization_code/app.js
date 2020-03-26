@@ -230,6 +230,15 @@ app.get('/spotify_active_device', function(req,res) {
   }
 });
 
+/** Generate option dict to pass to requests */
+function spotify_call_options(url) {
+  return {
+    url: 'https://api.spotify.com/v1/me/player/play',
+    headers: { 'Authorization': 'Bearer ' + global_token },
+    json: true,
+  };
+}
+
 /**
  * Play input song on spotify.
  *
@@ -240,20 +249,14 @@ app.get('/spotify_active_device', function(req,res) {
  */
 app.get('/arthur_play', function(req, res) {
   playable_device().then(function (result) {
-    var access_token = global_token;
-
     var uri = req.query.uri;
     console.log('Triggering ' + uri + ' at ' + new Date().toLocaleTimeString('fr-FR'));
 
     var values = {
       uris:[uri],
     };
-    var options = {
-      url: 'https://api.spotify.com/v1/me/player/play',
-      headers: { 'Authorization': 'Bearer ' + access_token },
-      json: true,
-      body:values,
-    };
+    var options = spotify_call_options('https://api.spotify.com/v1/me/player/play');
+    options.body = values;
 
     console.log('There is a device! Lets play on ' + result);
     request.put(options, function(error, response, body) {
