@@ -126,6 +126,7 @@
           videoId: arthur_vars.firstVideo,
           events: {
             'onReady': onPlayerReady,
+            'onStateChange': onPlayerStateChange,
           },
         });
 
@@ -159,6 +160,15 @@
           // new video seems to start automatically anyway
         }
         $('#youtube-player').show();
+      }
+
+      function onPlayerStateChange(event) {
+        if (event.data == YT.PlayerState.ENDED ) {
+          console.log('video ended');
+          // TODO: write (not here) code that check spotify status before pausing it
+          // and restart spotify if it was playing before when video ends
+          // some sort of readable event should be created out of this funciotn.
+        }
       }
 
       /** Stop youtube video if it had been initialized before */
@@ -398,9 +408,6 @@
                   })
                   stopVideo();
                 } else if (btnClass == "arthur_play_youtube_button") {
-                  // all the playback state should be improved:
-                  // - triggering spotify should add the track to the queue and then swith to it
-                  // - when youtube video finishes, spotify should start again
                   playVideo(e.target.value);
                   $.ajax({
                     url: '/arthur_pause',
