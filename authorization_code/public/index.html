@@ -23,7 +23,6 @@
     <div class="container">
       <h3>Spotify and Youtube, on the same page</h3>
       <div id="login">
-        <hr class="my-4">
         <a href="/login" class="btn btn-outline-success">Log in with your Spotify account</a>
       </div>
       <div id="loggedin_debugging">
@@ -93,7 +92,7 @@
     </script>
 
     <script id="play_or_queue-button-common-template" type="text/x-handlebars-template">
-      <button class="btn {{button_style}} {{platform_and_action}}" type="submit" value={{uri}}>{{label}}</button>
+      <button class="btn btn-sm {{button_style}} {{platform_and_action}}" type="submit" value={{uri}}>{{label}}</button>
     </script>
 
 
@@ -352,7 +351,7 @@
                         btn_cell.innerHTML = playButtonTemplate({
                           uri:element.uri,
                           platform_and_action:'arthur_queue_spotify_button',
-                          label: 'Queue',
+                          label: 'Queue & Play',
                           button_style: buttons[platform],
                         });
 
