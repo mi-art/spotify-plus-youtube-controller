@@ -77,8 +77,11 @@
     </script>
 
     <script id="spotify-status-template" type="text/x-handlebars-template">
-      <p class="card-text">Spotify playback on <b>{{spotify_active_device}}</b>. If your device is not showing up,
-        wake it up by playing some stuff directly on it first.</p>
+      <span id="ellipsis-ex" class="card-text d-inline-block text-truncate" style="max-width: 100%;">
+        Spotify playback on <b>{{spotify_active_device}}</b>. If your device is
+        not showing up, wake it up by playing some stuff directly on it. Please note that,
+        in the search results, "Play" directly plays the song while "Queue & Play" adds
+        it to the queue and jumps to it (assuming queue was empty before).</span>
     </script>
 
     <script id="oauth-template" type="text/x-handlebars-template">
@@ -207,6 +210,7 @@
         var spotifyStatusPlaceholder = document.getElementById('spotify-status');
 
         var timer;
+        var collapsableStatusText;
         function updateSpotifyStatus()
         {
           $.ajax({
@@ -218,6 +222,8 @@
             spotifyStatusPlaceholder.innerHTML = spotifyStatusTemplate({
               spotify_active_device:data
             });
+            // re-compute each time
+            collapsableStatusText = document.getElementById("ellipsis-ex");
           });
         }
         function startActivityRefresh() {
@@ -227,7 +233,12 @@
         function cancelActivityRefresh() {
           clearInterval(timer);
         }
-
+        function toggleSpotifyStatus() {
+          collapsableStatusText.classList.toggle("text-truncate");
+        };
+        spotifyStatusPlaceholder.addEventListener("click", function(e) {
+          toggleSpotifyStatus();
+        });
 
         var params = getHashParams();
 
