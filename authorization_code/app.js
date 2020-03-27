@@ -41,6 +41,7 @@ var extractVideoInfo = function(items)
 
 var getYoutubeResults = function(search_input, callback_func) {
   // https://developers.google.com/youtube/v3/docs/search/list
+  // consider using videoCategoryId to only get Music videos
   const params = {
     part: 'id,snippet',  // useless snippet?
     q: search_input,
@@ -149,14 +150,10 @@ app.get('/arthur_pause', function(req, res) {
 });
 
 var getSpotifyResults = function(search_input, callback_func) {
-  // SPOTIFY
-  var access_token = global_token;
-  var options = {
-    url: 'https://api.spotify.com/v1/search?query=' + encodeURIComponent(search_input) + '&type=track&offset=0&limit=3',
-    headers: { 'Authorization': 'Bearer ' + access_token },
-    json: true,
-  };
-  // use the access token to access the Spotify Web API
+  var options = spotify_call_options(
+    'https://api.spotify.com/v1/search?query='
+    + encodeURIComponent(search_input)
+    + '&type=track&offset=0&limit=3');
   request.get(options, function(error, response, body) {
     if (!error)
     {
@@ -170,10 +167,7 @@ var getSpotifyResults = function(search_input, callback_func) {
   });
 }
 
-// for now, only search on spotify (one day youtube too)
 app.get('/arthur_search', function(req, res) {
-
-  // COMMON
   var search_input = req.query.search_input;
   if (search_input == undefined || search_input.trim().length == 0)
   {
@@ -183,8 +177,6 @@ app.get('/arthur_search', function(req, res) {
     res.end();
   } else {
     console.log('Looking for: ' + search_input);
-
-    // YOUTUBE
 
     async.parallel([
       getSpotifyResults.bind(null, search_input), // null for "this"
@@ -209,11 +201,7 @@ app.get('/arthur_search', function(req, res) {
 function playable_device()
 {
   var promise = new Promise(function(resolve, reject) {
-    var options = {
-      url: 'https://api.spotify.com/v1/me/player',
-      headers: { 'Authorization': 'Bearer ' + global_token },
-      json: true,
-    };
+    var options = spotify_call_options('https://api.spotify.com/v1/me/player');
     request.get(options, function(error, response, body) {
       if (body == undefined)
       {
@@ -320,12 +308,7 @@ app.get('/arthur_queue', function(req, res) {
   playable_device().then(function (result) {
     async.series([
       function(callback) {
-        var options = {
-          url: 'https://api.spotify.com/v1/me/player/queue?uri=' + uri,
-          headers: { 'Authorization': 'Bearer ' + global_token },
-          json: true,
-        };
-
+        var options = spotify_call_options('https://api.spotify.com/v1/me/player/queue?uri=' + uri);
         console.log('Queue ' + uri);
 
         request.post(options, function(error, response, body) {
