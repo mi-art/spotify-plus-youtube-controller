@@ -48,6 +48,11 @@
         <div id="status"></div>
       </div>
       <div id="youtube-player">
+        <div align="right">
+          <button type="button" class="close text-danger" aria-label="Close" onclick="stopVideo();resumeSpotifyIfNeeded();">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
         <div id="youtube-actual-player"></div>
       </div>
     </div>
@@ -78,8 +83,8 @@
         not showing up, wake it up by playing some stuff directly on it. Please note that,
         in the search results, <b>Play</b> directly plays the song while <b>Queue & Play</b> adds
         it to the queue and jumps to it (assuming queue was empty before). Finally, when playing a
-        Youtube video, Spotify gets paused and will resume when the video ends if it was playing before 
-        (assuming the device did not go offline).
+        Youtube video, Spotify gets paused. When video ends or when you close it, Spotify playback
+        will resume if it was playing before (assuming the device did not go offline).
       </span>
     </script>
 
@@ -170,7 +175,7 @@
        * Note: Could fail because the device goes off after
        * couple of minutes paused.
        */
-      function onVideoEnd() {
+      function resumeSpotifyIfNeeded() {
         if (arthur_vars.playSpotifyOnVideoEnd)
         {
           // reset flag
@@ -187,7 +192,7 @@
 
       function onPlayerStateChange(event) {
         if (event.data == YT.PlayerState.ENDED ) {
-          onVideoEnd();
+          resumeSpotifyIfNeeded();
         }
       }
 
