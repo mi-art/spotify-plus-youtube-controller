@@ -21,7 +21,7 @@
 
   <body>
     <div class="container">
-      <h3>Spotify and Youtube, on the same page</h3>
+      <h3 class="mb-3">Spotify and Youtube, on the same page</h3>
       <div id="login">
         <a href="/login" class="btn btn-outline-success">Log in with your Spotify account</a>
       </div>
@@ -35,16 +35,16 @@
       </div>
       <div id="loggedin">
         <div class="card border-success mb-3">
-          <div class="card-body text-success" id="spotify-status">
+          <div class="card-body text-success p-2" id="spotify-status">
           </div>
         </div>
         <hr class="my-4">
-        <form id="track_search_form">
+        <form id="track_search_form" class="mb-3">
           <input type="text" class="form-control" placeholder="Type track's title and press enter"
           aria-label="Track's title" aria-describedby="basic-addon2" id="search_input">
         </form>
         <hr class="my-4">
-        <table class="table table-striped">
+        <table class="table table-striped small">
           <tbody id="spotify-tracks"></tbody>
         </table>
         <div id="status"></div>
@@ -76,11 +76,14 @@
     </script>
 
     <script id="spotify-status-template" type="text/x-handlebars-template">
-      <span id="ellipsis-ex" class="card-text d-inline-block text-truncate" style="max-width: 100%;">
+      <span id="ellipsis-ex" class="card-text d-inline-block text-truncate small" style="max-width: 100%;">
         Spotify playback on <b>{{spotify_active_device}}</b>. If your device is
         not showing up, wake it up by playing some stuff directly on it. Please note that,
-        in the search results, "Play" directly plays the song while "Queue & Play" adds
-        it to the queue and jumps to it (assuming queue was empty before).</span>
+        in the search results, <b>Play</b> directly plays the song while <b>Queue & Play</b> adds
+        it to the queue and jumps to it (assuming queue was empty before). Finally, when playing a
+        Youtube video, Spotify gets paused and will resume when the video ends if it was playing before 
+        (assuming the device did not go offline).
+      </span>
     </script>
 
     <script id="oauth-template" type="text/x-handlebars-template">
