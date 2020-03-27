@@ -140,7 +140,10 @@ app.get('/arthur_pause', function(req, res) {
     }
   }).catch(function (error) {
     //No active device
-    res.send({was_playing: false});
+    res.send({
+      error: error,
+      was_playing: false
+    });
     res.end();
   })
 });
@@ -272,16 +275,21 @@ function sleepy_error(res)
  */
 app.get('/arthur_play', function(req, res) {
   playable_device().then(function (result) {
-    var uri = req.query.uri;
-    console.log('Triggering ' + uri + ' at ' + new Date().toLocaleTimeString('fr-FR'));
-
-    var values = {
-      uris:[uri],
-    };
     var options = spotify_call_options('https://api.spotify.com/v1/me/player/play');
-    options.body = values;
+    var uri = req.query.uri;
+    if (uri)
+    {
+      console.log('Triggering ' + uri + ' at ' + new Date().toLocaleTimeString('fr-FR'));
 
-    console.log('There is a device! Lets play on ' + result);
+      var values = {
+        uris:[uri],
+      };
+      options.body = values;
+    }
+    else {
+      console.log('Play again what was playing');
+    }
+
     request.put(options, function(error, response, body) {
       if (!(!error && response.statusCode === 204)) {
         res.status(500).send('bloody hell');

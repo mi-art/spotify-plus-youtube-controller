@@ -103,6 +103,7 @@
         tag:null,
         firstScriptTag:null,
         firstVideo:null,
+        playSpotifyOnVideoEnd:false,
       };
 
       /** Create arthur_vars.player */
@@ -162,12 +163,30 @@
         $('#youtube-player').show();
       }
 
+      /*
+       * Called when video end. Trigger back spotify playback if needed.
+       *
+       * Note: Could fail because the device goes off after
+       * couple of minutes paused.
+       */
+      function onVideoEnd() {
+        if (arthur_vars.playSpotifyOnVideoEnd)
+        {
+          // reset flag
+          arthur_vars.playSpotifyOnVideoEnd = false;
+
+          $.ajax({
+            url: "/arthur_play",
+            error: function(XMLHttpRequest, textStatus, errorThrown) {
+                alert(XMLHttpRequest.responseText);
+            },
+          })
+        }
+      }
+
       function onPlayerStateChange(event) {
         if (event.data == YT.PlayerState.ENDED ) {
-          console.log('video ended');
-          // TODO: write (not here) code that check spotify status before pausing it
-          // and restart spotify if it was playing before when video ends
-          // some sort of readable event should be created out of this funciotn.
+          onVideoEnd();
         }
       }
 
@@ -411,6 +430,15 @@
                   playVideo(e.target.value);
                   $.ajax({
                     url: '/arthur_pause',
+                  }).done(function(data) {
+                    if (data.error)
+                    {
+                      alert(data.error);
+                    };
+                    if (data.was_playing)
+                    {
+                      arthur_vars.playSpotifyOnVideoEnd = true;
+                    }
                   });
                 }
               }
