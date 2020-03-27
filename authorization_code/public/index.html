@@ -21,7 +21,12 @@
 
   <body>
     <div class="container">
-      <h3 class="mb-3">Spotify and Youtube, on the same page</h3>
+      <div class="card text-white bg-dark mb-3" style="width: 100%;">
+        <div class="card-body">
+          <h3 class="card-title">Spotify and Youtube, on the same page.</h5>
+          <!-- <p class="card-text">Find something clever to say</p> -->
+        </div>
+      </div>
       <div id="login">
         <a href="/login" class="btn btn-outline-success">Log in with your Spotify account</a>
       </div>
@@ -34,7 +39,7 @@
         <button class="btn btn-default" id="obtain-new-token">Obtain new token using the refresh token</button>
       </div>
       <div id="loggedin">
-        <div class="card border-success mb-3">
+        <div class="card border-success mb-3" title="Click to read more">
           <div class="card-body text-success p-2">
             <span id="ellipsis-ex" class="card-text d-inline-block text-truncate small" style="max-width: 100%;">
               <div id="spotify-status"></div>
@@ -275,6 +280,7 @@
         };
         spotifyStatusPlaceholder.addEventListener("click", function(e) {
           toggleSpotifyStatus();
+          updateSpotifyStatus();
         });
 
         var params = getHashParams();
