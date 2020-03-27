@@ -117,22 +117,32 @@ app.get('/login', function(req, res) {
     }));
 });
 
+/**
+ * Stop spotify playback and return back whether it was playing
+ * before. Does not throw if no active device or device already
+ * stopped.
+ */
 app.get('/arthur_pause', function(req, res) {
-  var access_token = global_token;
-
-  var options = {
-    url: 'https://api.spotify.com/v1/me/player/pause',
-    headers: { 'Authorization': 'Bearer ' + access_token },
-    json: true,
-  };
-
-  console.log("Pause?");
-  // use the access token to access the Spotify Web API
-  request.put(options, function(error, response, body) {
-      // response.statusCode should be checked
-      console.log("Pause.");
+  playable_device().then(function (result) {
+    if (result.is_playing)
+    {
+      // do actually Pause
+      var options = spotify_call_options('https://api.spotify.com/v1/me/player/pause');
+      request.put(options, function(error, response, body) {
+        // response.statusCode should be checked
+        res.send({was_playing: true});
+        res.end();
+        });
+    } else {
+      //Was not playing
+      res.send({was_playing: false});
       res.end();
-  });
+    }
+  }).catch(function (error) {
+    //No active device
+    res.send({was_playing: false});
+    res.end();
+  })
 });
 
 var getSpotifyResults = function(search_input, callback_func) {
@@ -190,7 +200,8 @@ app.get('/arthur_search', function(req, res) {
 
 /**
  * Create a promise that is successful if there is an active
- * spotify device and returns its name, and fails otherwise.
+ * spotify device and returns the device name and whether its playing.
+ * Fails if there is no active device.
  */
 function playable_device()
 {
@@ -207,7 +218,10 @@ function playable_device()
       }
       else
       {
-        resolve(body.device.name);
+        resolve({
+          device_name:body.device.name,
+          is_playing:body.is_playing,
+        });
       }
     });
   });
@@ -223,8 +237,8 @@ app.get('/spotify_active_device', function(req,res) {
   }
   else
   {
-    playable_device().then(function (dev_name) {
-      res.send(dev_name);
+    playable_device().then(function (result) {
+      res.send(result.device_name);
       res.end();
     }).catch(function (error) {
       res.send("NO DEVICE");
