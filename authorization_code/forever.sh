@@ -1,0 +1,1 @@
+supervisor --timestamp  --extensions "node,js,html" --watch ".,./public" app.js
