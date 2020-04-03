@@ -215,27 +215,30 @@ function spotify_factory()
     arthur_pause: function(req, res)
     {
       return thaat.playable_device()
-      .catch(function (error) {
-        // Catch missing device 
-        return {is_playing: false};
-      })
-      .then(function (result) {
-        console.log(result);
-        if (result.is_playing)
-        {
-          // do actually Pause
-          thaat.apiCall('https://api.spotify.com/v1/me/player/pause', 'PUT').fail(function(error){
-            console.log(' pause failed with :');
-            console.log( error);
+        .catch(function (error) {
+          // Catch missing device 
+          return ({
+            error: error,
+            was_playing: false
           });
-          // request.put(options, function(error, response, body) {
-            // response.statusCode should be checked
-          return {was_playing: true};
-        } else {
-          //Was not playing
-          return {was_playing: false};
-        }
-      });
+        })
+        .then(function (result) {
+          console.log(result);
+          if (result.is_playing)
+          {
+            // do actually Pause
+            thaat.apiCall('https://api.spotify.com/v1/me/player/pause', 'PUT').fail(function(error){
+              console.log(' pause failed with :');
+              console.log( error);
+            });
+            // request.put(options, function(error, response, body) {
+              // response.statusCode should be checked
+            return {was_playing: true};
+          } else {
+            //Was not playing
+            return {was_playing: false};
+          }
+        });
     },
   };
 

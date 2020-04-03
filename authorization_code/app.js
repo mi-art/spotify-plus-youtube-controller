@@ -118,37 +118,6 @@ app.get('/login', function(req, res) {
     }));
 });
 
-/**
- * Stop spotify playback and return back whether it was playing
- * before. Does not throw if no active device or device already
- * stopped.
- */
-app.get('/arthur_pause', function(req, res) {
-  playable_device().then(function (result) {
-    if (result.is_playing)
-    {
-      // do actually Pause
-      var options = spotify_call_options('https://api.spotify.com/v1/me/player/pause');
-      request.put(options, function(error, response, body) {
-        // response.statusCode should be checked
-        res.send({was_playing: true});
-        res.end();
-        });
-    } else {
-      //Was not playing
-      res.send({was_playing: false});
-      res.end();
-    }
-  }).catch(function (error) {
-    //No active device
-    res.send({
-      error: error,
-      was_playing: false
-    });
-    res.end();
-  })
-});
-
 var getSpotifyResults = function(search_input, callback_func) {
   var options = spotify_call_options(
     'https://api.spotify.com/v1/search?query='
