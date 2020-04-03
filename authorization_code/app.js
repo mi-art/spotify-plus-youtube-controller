@@ -222,42 +222,6 @@ function sleepy_error(res)
   res.status(503).send('Spotify device fell asleep, wake him up playing something!')
 }
 
-/**
- * Play input song on spotify.
- *
- * Doesn't always work when spotify app is sleeping ..  In that case,
- * return an error 503 and instruct user to refresh his spotify device.
- *
- * TODO: instanciate the spotify webplayback stuff and play there
- */
-app.get('/arthur_play', function(req, res) {
-  playable_device().then(function (result) {
-    var options = spotify_call_options('https://api.spotify.com/v1/me/player/play');
-    var uri = req.query.uri;
-    if (uri)
-    {
-      console.log('Triggering ' + uri + ' at ' + new Date().toLocaleTimeString('fr-FR'));
-
-      var values = {
-        uris:[uri],
-      };
-      options.body = values;
-    }
-    else {
-      console.log('Play again what was playing');
-    }
-
-    request.put(options, function(error, response, body) {
-      if (!(!error && response.statusCode === 204)) {
-        res.status(500).send('bloody hell');
-      }
-      res.end();
-    });
-  }).catch(function (error) {
-    sleepy_error(res);
-    res.end();
-  });
-});
 
 /*
  * Add track to queue and skip playback to it.

@@ -32,6 +32,7 @@
       </div>
       <div id="loggedin_debugging">
         <button class="btn btn-outline-success" onclick="ytfy.apis_wrap.spotify.arthur_pause();">Pause spotify</button>
+        <button class="btn btn-outline-success" onclick="ytfy.apis_wrap.spotify.arthur_play();">Play spotify</button>
         <div id="user-profile">
         </div>
         <div id="oauth">
@@ -312,19 +313,11 @@
               if (btnClass)
               {
                 if (["arthur_play_spotify_button", "arthur_queue_spotify_button"].includes(btnClass)) {
-                  var url = {
-                    arthur_play_spotify_button:'/arthur_play',
-                    arthur_queue_spotify_button:'/arthur_queue',
+                  var action_map = {
+                    "arthur_play_spotify_button":ytfy.apis_wrap.spotify.arthur_play,
+                    "arthur_queue_spotify_button":() => console.log('queue not defined!'),
                   };
-                  $.ajax({
-                    url: url[btnClass],
-                    data: {
-                      'uri': e.target.value
-                    },
-                    error: function(XMLHttpRequest, textStatus, errorThrown) {
-                        alert(XMLHttpRequest.responseText);
-                    },
-                  })
+                  action_map[btnClass](e.target.value);
                   ytfy.stopVideo();
                 } else if (btnClass == "arthur_play_youtube_button") {
                   ytfy.playVideo(e.target.value);

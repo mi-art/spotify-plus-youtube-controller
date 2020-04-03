@@ -110,6 +110,12 @@ function onYouTubeIframeAPIReady() { ytfy.onYouTubeIframeAPIReady_internal() };
 
 function spotify_factory()
 {
+  function sleepy_error(error)
+  {
+    console.log(error);
+    alert('Spotify device fell asleep, wake him up playing something!')
+  }
+
   var thaat =  {
     spotify_token:null,
 
@@ -246,8 +252,43 @@ function spotify_factory()
         });
     },
 
-  };
+    /**
+     * Play input song on spotify.
+     *
+     * Doesn't always work when spotify app is sleeping ..  In that case,
+     * raise an alert.
+     *
+     * TODO: instanciate the spotify webplayback stuff and play there
+     * TODO: check play api no error and statusCode === 204
+     */
+    arthur_play: function(uri) {
+      return thaat.playable_device().then(
+        function (result) {
+          if (uri)
+          {
+            console.log('Triggering ' + uri);
 
+            var values = {uris: [uri]};
+            thaat.apiCall('https://api.spotify.com/v1/me/player/play', 'PUT', values);
+          }
+          else if (result.is_playing)
+          {
+            console.log('Already playing and no track passed: do nothing');
+          }
+          else
+          {
+            console.log('Play again what was playing');
+            thaat.apiCall('https://api.spotify.com/v1/me/player/play', 'PUT');
+          }
+
+        },
+        function (error) {
+          sleepy_error(error);
+        });
+    },
+
+
+  };  // end of thaat
   return thaat;
 }
 ytfy.apis_wrap = {
