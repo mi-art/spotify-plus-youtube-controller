@@ -214,15 +214,8 @@ function spotify_factory()
    */
     arthur_pause: function(req, res)
     {
-      return thaat.playable_device()
-        .catch(function (error) {
-          // Catch missing device 
-          return ({
-            error: error,
-            was_playing: false
-          });
-        })
-        .then(function (result) {
+      return thaat.playable_device().then(
+        function (result) {
           console.log(result);
           if (result.is_playing)
           {
@@ -238,8 +231,16 @@ function spotify_factory()
             //Was not playing
             return {was_playing: false};
           }
+        },
+        function (error) {
+          // Catch missing device
+          return ({
+            error: error,
+            was_playing: false
+          });
         });
     },
+
   };
 
   return thaat;
