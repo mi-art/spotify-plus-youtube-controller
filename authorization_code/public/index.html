@@ -31,7 +31,7 @@
         <a href="/login" class="btn btn-outline-success">Log in with your Spotify account</a>
       </div>
       <div id="loggedin_debugging">
-        <button class="btn btn-outline-success" id="arthur_pause">Pause spotify</button>
+        <button class="btn btn-outline-success" onclick="ytfy.apis_wrap.spotify.arthur_pause();">Pause spotify</button>
         <div id="user-profile">
         </div>
         <div id="oauth">
@@ -226,12 +226,6 @@
                 access_token: access_token,
                 refresh_token: refresh_token
               });
-            });
-          }, false);
-
-          document.getElementById('arthur_pause').addEventListener('click', function() {
-            $.ajax({
-              url: '/arthur_pause',
             });
           }, false);
 
