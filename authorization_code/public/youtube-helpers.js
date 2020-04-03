@@ -151,17 +151,22 @@ function spotify_factory()
 
 
     /** Taken from exportify */
-    apiCall: function(url, method, /*expected_status*/) {
-      console.log(thaat.spotify_token);
-      var options = {}
-
-      return $.ajax({
+    apiCall: function(url, method, body) {
+      var options = {
         url: url,
         headers: {
           'Authorization': 'Bearer ' + thaat.spotify_token,
         },
         method:method,
-      }).fail(function (jqXHR, textStatus) {
+      };
+      if (body)
+      {
+        // https://stackoverflow.com/a/43268197
+        options.dataType = 'json';
+        options.data = JSON.stringify(body);
+        options.contentType = 'application/json; charset=utf-8';
+      }
+      return $.ajax(options).fail(function (jqXHR, textStatus) {
         if (jqXHR.status == 401) {
           // Return to home page after auth token expiry
           window.location = window.location.href.split('#')[0]
