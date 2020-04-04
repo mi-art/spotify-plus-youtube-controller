@@ -81,12 +81,14 @@ var ytfy = {
       // reset flag
       ytfy.playSpotifyOnVideoEnd = false;
 
-      $.ajax({
-        url: "/arthur_play",
-        error: function(XMLHttpRequest, textStatus, errorThrown) {
-            console.log(XMLHttpRequest.responseText);
-        },
-      })
+      ytfy.apis_wrap.spotify.playable_device()
+      .then(
+        () => ytfy.apis_wrap.spotify.arthur_play(),
+        function(error){
+          console.log('Could not resume spotify (device probably fell asleep)');
+          console.log(error);
+        }
+      );
     }
   },
 
