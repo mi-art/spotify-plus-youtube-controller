@@ -292,6 +292,24 @@ function spotify_factory()
       return promise;
     },
 
+    /**
+     * Return a promise that resolve with the device name (or "NO DEVICE")
+     */
+    spotify_active_device: function() {
+      if (thaat.spotify_token == '')  // not nice, should be handled by apiCall
+      {
+        return $.Deferred().reject('Rejecting because no token');
+      }
+      else
+      {
+        return thaat.playable_device()
+          .then(result => result.device_name)
+          .catch(function (error) {
+            return("NO DEVICE");
+          });
+      }
+    },
+
 
     /**
      * Get spotify tracks results for @param {string} search_input.
@@ -463,6 +481,7 @@ var onYouTubeIframeAPIReady = ytfy.yt_player.onYouTubeIframeAPIReady_internal;
 var googleApiClientReady = ytfy.yt_search.load_youtube_search;
 
 // main function
+// TODO: clear error for non-premimum accounts
 (function() {
   var params = ytfy.spotify.getHashParams();
   // 'rate_limit_message' not handled so far

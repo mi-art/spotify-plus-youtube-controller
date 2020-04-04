@@ -155,17 +155,17 @@
         var collapsableStatusText;
         function updateSpotifyStatus()
         {
-          $.ajax({
-            url: '/spotify_active_device',
-            error: function(XMLHttpRequest, textStatus, errorThrown) {
-              cancelActivityRefresh();
-            },
-          }).done(function(data) {
+          ytfy.spotify.spotify_active_device()
+          .then(function(data) {
             spotifyStatusPlaceholder.innerHTML = spotifyStatusTemplate({
               spotify_active_device:data
             });
             // re-compute each time
             collapsableStatusText = document.getElementById("ellipsis-ex");
+
+          }).catch(function(err) {
+            console.log('Could not refresh device name', err);
+            cancelActivityRefresh();
           });
         }
         function startActivityRefresh() {

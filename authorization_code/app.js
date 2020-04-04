@@ -60,64 +60,6 @@ app.get('/login', function(req, res) {
     }));
 });
 
-
-
-
-/**
- * Create a promise that is successful if there is an active
- * spotify device and returns the device name and whether its playing.
- * Fails if there is no active device.
- */
-function playable_device()
-{
-  var promise = new Promise(function(resolve, reject) {
-    var options = spotify_call_options('https://api.spotify.com/v1/me/player');
-    request.get(options, function(error, response, body) {
-      if (body == undefined)
-      {
-        reject('No device available');
-      }
-      else
-      {
-        resolve({
-          device_name:body.device.name,
-          is_playing:body.is_playing,
-        });
-      }
-    });
-  });
-  return promise;
-};
-
-app.get('/spotify_active_device', function(req,res) {
-  if (global_token == '')
-  {
-    // this should be in a generic method generating the auth part
-    // and used for every url
-    res.status(401).send('Not logged in Spotify');
-  }
-  else
-  {
-    playable_device().then(function (result) {
-      res.send(result.device_name);
-      res.end();
-    }).catch(function (error) {
-      res.send("NO DEVICE");
-      res.end();
-    })
-  }
-});
-
-/** Generate option dict to pass to requests */
-function spotify_call_options(url) {
-  return {
-    url: url,
-    headers: { 'Authorization': 'Bearer ' + global_token },
-    json: true,
-  };
-}
-
-
 app.get('/callback', function(req, res) {
 
   // your application requests refresh and access tokens
