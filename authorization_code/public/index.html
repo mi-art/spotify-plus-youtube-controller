@@ -108,11 +108,16 @@
       <button class="btn btn-sm {{button_style}} {{platform_and_action}}" type="submit" value={{uri}}>{{label}}</button>
     </script>
 
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/async@3.2.0/dist/async.min.js"></script>
+    <!--
+      dependencies: youtify.js to be loaded before google client so
+      that googleApiClientReady is already declared
+    -->
     <script type="text/javascript" src="youtify.js"></script>
-
+    <script src="https://apis.google.com/js/client.js?onload=googleApiClientReady"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/2.0.0-alpha.1/handlebars.min.js"></script>
     <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/async@3.2.0/dist/async.min.js"></script>
+
     <script>
       (function() {
 

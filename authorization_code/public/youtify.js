@@ -113,6 +113,43 @@ function youtube_player_factory()
   return thaat;
 }
 
+
+function youtube_search_factory() {
+  var is_loaded = false;
+
+  var thaat = {
+    // Make sure the client is loaded and sign-in is complete before calling this method.
+    search_vid: function (search_input) {
+      if (!is_loaded) throw 'google api not loaded';
+
+      return gapi.client.youtube.search.list({
+          "part": "id,snippet",
+          "maxResults": 3,
+          "q": search_input,
+          "type": "video"
+        })
+        .then(
+          function(response) {
+            // Handle the results here (response.result has the parsed body).
+            console.log("Response", response);
+          },
+          function(err) { console.error("Execute error", err); }
+        );
+    },
+
+    // called by onload, at the very end of page loading (async defer attribute)
+    load_youtube_search: function(){
+      console.log('in load_youtube_search');
+      gapi.client.setApiKey('AIzaSyAxHmx63rVlGpFMMWP4UNH0-mV_Bwr8ez8');
+      return gapi.client.load('youtube', 'v3').then(function(){
+        is_loaded = true;
+        console.log('loaded!');
+      });
+    },
+  };
+  return thaat;
+}
+
 function spotify_factory()
 {
   function sleepy_error(error)
@@ -398,12 +435,12 @@ function common_factory()
 var ytfy = {
   spotify: spotify_factory(),
   yt_player: youtube_player_factory(),
-  // yt_search: TODO
+  yt_search: youtube_search_factory(),
   common: common_factory(),
 };
 
-function onYouTubeIframeAPIReady() { ytfy.yt_player.onYouTubeIframeAPIReady_internal() };
-
+var onYouTubeIframeAPIReady = ytfy.yt_player.onYouTubeIframeAPIReady_internal;
+var googleApiClientReady = ytfy.yt_search.load_youtube_search;
 
 // main function
 (function() {
