@@ -198,7 +198,6 @@ function spotify_factory()
     {
       var promise = new Promise(function(resolve, reject) {
         thaat.apiCall('https://api.spotify.com/v1/me/player', 'GET').then(function(response) {
-          console.log(response);
           if (response == undefined)
           {
             reject('No device available');
@@ -289,6 +288,47 @@ function spotify_factory()
         });
     },
 
+    /*
+    * Add track to queue and skip playback to it.
+    *
+    * Note: Won't work if there was already some stuff in the queue.
+    *
+    * TODOs:
+    *  - API statusCode 204 to check
+    *  - if many tracks in queue, we could clear it first, or even do next until reaching the track etc..
+    *    we could also add a UI widget selecting the action to perform on spotify play button
+    *  - Not done, but from  API doc"Due to the asynchronous nature of the issuance of the command,
+    *   you should use the Get Information About The User’s Current Playback to check that your issued
+    *   command was handled correctly by the player."
+    */
+    arthur_queue: function(uri) {
+      return thaat.playable_device()
+      .then(
+        function () {
+          async.series([
+            function(callback) {
+              console.log('Queue ' + uri);
+              thaat.apiCall('https://api.spotify.com/v1/me/player/queue?uri=' + uri, 'POST')
+              .then(function() {
+                callback();
+              });
+            },
+            function(callback) {
+              console.log('Next');
+              thaat.apiCall('https://api.spotify.com/v1/me/player/next', 'POST')
+              .then(function() {
+                callback();
+              });
+            },
+          ]).catch(function (error) {
+            console.log('something went wrong in queuing or nexting');
+            console.log(error);
+          })
+        },
+        function (error) {
+          sleepy_error(error);
+        });
+    },
 
   };  // end of thaat
   return thaat;

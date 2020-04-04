@@ -112,6 +112,7 @@
 
     <script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/2.0.0-alpha.1/handlebars.min.js"></script>
     <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/async@3.2.0/dist/async.min.js"></script>
     <script>
       (function() {
 
@@ -315,7 +316,7 @@
                 if (["arthur_play_spotify_button", "arthur_queue_spotify_button"].includes(btnClass)) {
                   var action_map = {
                     "arthur_play_spotify_button":ytfy.apis_wrap.spotify.arthur_play,
-                    "arthur_queue_spotify_button":() => console.log('queue not defined!'),
+                    "arthur_queue_spotify_button":ytfy.apis_wrap.spotify.arthur_queue,
                   };
                   action_map[btnClass](e.target.value);
                   ytfy.stopVideo();
