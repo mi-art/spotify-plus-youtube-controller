@@ -114,30 +114,51 @@ function youtube_player_factory()
 }
 
 
-function youtube_search_factory() {
+function youtube_search_factory()
+{
   var is_loaded = false;
 
+  function extractVideoInfo(items)
+  {
+    var filtered = []; // subset of api results
+    items.forEach(function(element) {
+      const sub = {
+        name: element.snippet.title,
+        uri: element.id.videoId,
+      };
+      filtered.push(sub);
+    });
+    return filtered;
+  };
+
+
   var thaat = {
-    // Make sure the client is loaded and sign-in is complete before calling this method.
-    search_vid: function (search_input) {
-      if (!is_loaded) throw 'google api not loaded';
+    /**
+     * Search for youtube videos. See spotify.search_track for @param callback_func
+     *
+     * Make sure the client is loaded and sign-in is complete before calling this method
+     */
+    search_videos: function (search_input, callback_func) {
+      if (!is_loaded) throw 'google api not loaded yet';
 
       return gapi.client.youtube.search.list({
           "part": "id,snippet",
           "maxResults": 3,
           "q": search_input,
-          "type": "video"
+          "type": ["video"],
         })
         .then(
           function(response) {
-            // Handle the results here (response.result has the parsed body).
-            console.log("Response", response);
+            var items = extractVideoInfo(response.result.items);
+            callback_func(null, items);
           },
-          function(err) { console.error("Execute error", err); }
+          callback_func
         );
     },
 
-    // called by onload, at the very end of page loading (async defer attribute)
+    /**
+     * Called once, on client.js onload.
+     */
     load_youtube_search: function(){
       console.log('in load_youtube_search');
       gapi.client.setApiKey('AIzaSyAxHmx63rVlGpFMMWP4UNH0-mV_Bwr8ez8');
@@ -421,8 +442,7 @@ function common_factory()
         console.log('Looking for: ' + search_input);
         promise = async.parallel({
           spotify: ytfy.spotify.search_tracks.bind(null, search_input), // null for "this"
-          youtube: ytfy.spotify.search_tracks.bind(null, search_input + 'bc'), // TEMP null for "this"
-          //getYoutubeResults.bind(null, search_input),  // TODO
+          youtube: ytfy.yt_search.search_videos.bind(null, search_input), // null for "this"
         });
       }
       return promise;

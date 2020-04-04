@@ -12,53 +12,11 @@ var request = require('request'); // "Request" library
 var cors = require('cors');
 var querystring = require('querystring');
 var cookieParser = require('cookie-parser');
-var async = require("async");
 
 var client_id = '33586b0c8c344403969b1e5553969279'; // Your client id
 var client_secret = '560515e6eaf64f0abab59eb35652448a'; // Your secret
 var redirect_uri = 'http://localhost:8888/callback'; // Your redirect uri
 
-////////////////// YOUTUBE EXAMPLE //////////////////
-// initialize the Youtube API library
-const {google} = require('googleapis');
-const youtube = google.youtube({
-  version: 'v3',
-  auth: 'AIzaSyAxHmx63rVlGpFMMWP4UNH0-mV_Bwr8ez8',
-});
-
-var extractVideoInfo = function(items)
-{
-  var filtered = []; // subset of api results
-  items.forEach(function(element) {
-    const sub = {
-      name: element.snippet.title,
-      uri: element.id.videoId,
-    };
-    filtered.push(sub);
-  });
-  return filtered;
-};
-
-var getYoutubeResults = function(search_input, callback_func) {
-  // https://developers.google.com/youtube/v3/docs/search/list
-  // consider using videoCategoryId to only get Music videos
-  const params = {
-    part: 'id,snippet',  // useless snippet?
-    q: search_input,
-    maxResults : 3,
-    type: ['video'],
-  };
-
-  youtube.search.list(params, (err, res) => {
-    if (err) {
-      console.error(err);
-      throw err;  // should it be: callback_func(err); instead?????
-    }
-    var items = extractVideoInfo(res.data.items);
-    callback_func(null, items);
-  });
-};
-/////////////////////////////////////////////////////
 
 /**
  * Generates a random string containing numbers and letters
@@ -248,5 +206,6 @@ app.get('/refresh_token', function(req, res) {
   });
 });
 
-console.log('Listening on 8888');
-app.listen(8888);
+var port = 8888;
+console.log('Listening on ' + port);
+app.listen(port);
