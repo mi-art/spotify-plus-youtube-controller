@@ -1,114 +1,117 @@
-var ytfy = {
+function youtube_player_factory()
+{
+  var thaat = {
 
-  // sort of private vars
-  arthur_vars: {
-    player:null,
-    tag:null,
-    firstScriptTag:null,
-    firstVideo:null,
-  },
+    // sort of private vars
+    arthur_vars: {
+      player:null,
+      tag:null,
+      firstScriptTag:null,
+      firstVideo:null,
+    },
 
-  playSpotifyOnVideoEnd:false,
+    playSpotifyOnVideoEnd:false,
 
-  /** Create ytfy.arthur_vars.player */
-  initializePlayer: function(first_video_uri){
-    ytfy.arthur_vars.firstVideo = first_video_uri;
+    /** Create thaat.arthur_vars.player */
+    initializePlayer: function(first_video_uri){
+      thaat.arthur_vars.firstVideo = first_video_uri;
 
-    // 2. This code loads the IFrame Player API code asynchronously.
-    ytfy.arthur_vars.tag = document.createElement('script');
+      // 2. This code loads the IFrame Player API code asynchronously.
+      thaat.arthur_vars.tag = document.createElement('script');
 
-    ytfy.arthur_vars.tag.src = "https://www.youtube.com/iframe_api";
-    ytfy.arthur_vars.firstScriptTag = document.getElementsByTagName('script')[0];
-    ytfy.arthur_vars.firstScriptTag.parentNode.insertBefore(ytfy.arthur_vars.tag, ytfy.arthur_vars.firstScriptTag);
-  },
+      thaat.arthur_vars.tag.src = "https://www.youtube.com/iframe_api";
+      thaat.arthur_vars.firstScriptTag = document.getElementsByTagName('script')[0];
+      thaat.arthur_vars.firstScriptTag.parentNode.insertBefore(thaat.arthur_vars.tag, thaat.arthur_vars.firstScriptTag);
+    },
 
-  // 3. This function creates an <iframe> (and YouTube player)
-  //    after the API code downloads.
-  onYouTubeIframeAPIReady_internal: function() {
-    ytfy.arthur_vars.player = new YT.Player('youtube-actual-player', {
-      height: '270',  // minimum size required by Player API doc
-      width: '100%',
-      videoId: ytfy.arthur_vars.firstVideo,
-      events: {
-        'onReady': ytfy.onPlayerReady,
-        'onStateChange': ytfy.onPlayerStateChange,
-      },
-    });
+    // 3. This function creates an <iframe> (and YouTube player)
+    //    after the API code downloads.
+    onYouTubeIframeAPIReady_internal: function() {
+      thaat.arthur_vars.player = new YT.Player('youtube-actual-player', {
+        height: '270',  // minimum size required by Player API doc
+        width: '100%',
+        videoId: thaat.arthur_vars.firstVideo,
+        events: {
+          'onReady': thaat.onPlayerReady,
+          'onStateChange': thaat.onPlayerStateChange,
+        },
+      });
 
-    // clear out firstVideo to have clear error if this was to be called again.
-    ytfy.arthur_vars.firstVideo = null;
-  },
+      // clear out firstVideo to have clear error if this was to be called again.
+      thaat.arthur_vars.firstVideo = null;
+    },
 
-  // 4. The API will call this function when the video player is ready.
-  onPlayerReady: function(event) {
-    event.target.playVideo();
-    ytfy.showPlayer();  // if shown before, only the closing box appears
-  },
+    // 4. The API will call this function when the video player is ready.
+    onPlayerReady: function(event) {
+      event.target.playVideo();
+      thaat.showPlayer();  // if shown before, only the closing box appears
+    },
 
-  showPlayer: function() {
-    $('#youtube-player').show();
-  },
-  /**
-   * Play video based on its @param uri (e.g "M7lc1UVf-VE")
-   *
-   * On first call it loads all the youtube stuff and start vid.
-   * On next calls, loaded player is reused thanks to ytfy.arthur_vars
-   * global.
-   */
-  playVideo: function(uri) {
-    if (ytfy.arthur_vars.player == null)
-    {
-      console.log('Create youtube player with ' + uri);
-      ytfy.initializePlayer(uri);
-    }
-    else
-    {
-      console.log('Update youtube player with ' + uri);
-      ytfy.arthur_vars.player.loadVideoById(uri);
-      ytfy.showPlayer();
-    }
-  },
+    showPlayer: function() {
+      $('#youtube-player').show();
+    },
+    /**
+     * Play video based on its @param uri (e.g "M7lc1UVf-VE")
+     *
+     * On first call it loads all the youtube stuff and start vid.
+     * On next calls, loaded player is reused thanks to thaat.arthur_vars
+     * global.
+     */
+    playVideo: function(uri) {
+      if (thaat.arthur_vars.player == null)
+      {
+        console.log('Create youtube player with ' + uri);
+        thaat.initializePlayer(uri);
+      }
+      else
+      {
+        console.log('Update youtube player with ' + uri);
+        thaat.arthur_vars.player.loadVideoById(uri);
+        thaat.showPlayer();
+      }
+    },
 
-  /*
-  * Called when video end. Trigger back spotify playback if needed.
-  *
-  * Note: Could fail because the device goes off after
-  * couple of minutes paused.
-  */
-  resumeSpotifyIfNeeded: function() {
-    if (ytfy.playSpotifyOnVideoEnd)
-    {
-      // reset flag
-      ytfy.playSpotifyOnVideoEnd = false;
+    /*
+    * Called when video end. Trigger back spotify playback if needed.
+    *
+    * Note: Could fail because the device goes off after
+    * couple of minutes paused.
+    */
+    resumeSpotifyIfNeeded: function() {
+      if (thaat.playSpotifyOnVideoEnd)
+      {
+        // reset flag
+        thaat.playSpotifyOnVideoEnd = false;
 
-      ytfy.apis_wrap.spotify.playable_device()
-      .then(
-        () => ytfy.apis_wrap.spotify.arthur_play(),
-        function(error){
-          console.log('Could not resume spotify (device probably fell asleep)');
-          console.log(error);
-        }
-      );
-    }
-  },
+        ytfy.spotify.playable_device()
+        .then(
+          () => ytfy.spotify.arthur_play(),
+          function(error){
+            console.log('Could not resume spotify (device probably fell asleep)');
+            console.log(error);
+          }
+        );
+      }
+    },
 
-  onPlayerStateChange: function(event) {
-    if (event.data == YT.PlayerState.ENDED ) {
-      ytfy.resumeSpotifyIfNeeded();
-    }
-  },
+    onPlayerStateChange: function(event) {
+      if (event.data == YT.PlayerState.ENDED ) {
+        thaat.resumeSpotifyIfNeeded();
+      }
+    },
 
-  /** Stop youtube video if it had been initialized before */
-  stopVideo: function() {
-    if (ytfy.arthur_vars.player != null)
-    {
-      ytfy.arthur_vars.player.stopVideo();
-    }
-    $('#youtube-player').hide();
-  },
-};
+    /** Stop youtube video if it had been initialized before */
+    stopVideo: function() {
+      if (thaat.arthur_vars.player != null)
+      {
+        thaat.arthur_vars.player.stopVideo();
+      }
+      $('#youtube-player').hide();
+    },
+  };
 
-function onYouTubeIframeAPIReady() { ytfy.onYouTubeIframeAPIReady_internal() };
+  return thaat;
+}
 
 function spotify_factory()
 {
@@ -333,17 +336,24 @@ function spotify_factory()
   };  // end of thaat
   return thaat;
 }
-ytfy.apis_wrap = {
+
+var ytfy = {
   spotify: spotify_factory(),
+  yt_player: youtube_player_factory(),
+  // yt_search: TODO
 };
+
+function onYouTubeIframeAPIReady() { ytfy.yt_player.onYouTubeIframeAPIReady_internal() };
+
+
 // main function
 (function() {
-  var params = ytfy.apis_wrap.spotify.getHashParams();
+  var params = ytfy.spotify.getHashParams();
   // 'rate_limit_message' not handled so far
   if (typeof params['access_token'] === 'undefined') {
     console.log('not logged in :(')
   } else {
     console.log('logged in :)');// With token ' + params['access_token']);
-    ytfy.apis_wrap.spotify.spotify_token = params['access_token'];
+    ytfy.spotify.spotify_token = params['access_token'];
   }
 })();
