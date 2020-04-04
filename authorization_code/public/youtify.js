@@ -1,3 +1,6 @@
+var ytfy = function()
+{
+
 function youtube_player_factory()
 {
   var thaat = {
@@ -470,13 +473,16 @@ function common_factory()
   return thaat;
 }
 
-var ytfy = {
+return {
   spotify: spotify_factory(),
   yt_player: youtube_player_factory(),
   yt_search: youtube_search_factory(),
   common: common_factory(),
 };
 
+}();   // end of ytfy "namespace"
+
+// globals next to ytfy
 var onYouTubeIframeAPIReady = ytfy.yt_player.onYouTubeIframeAPIReady_internal;
 var googleApiClientReady = ytfy.yt_search.load_youtube_search;
 
