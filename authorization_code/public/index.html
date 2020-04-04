@@ -237,66 +237,59 @@
             event.preventDefault();
 
             var dadata = $('#search_input').val();
-            $.ajax({
-              url: '/arthur_search',
-              data: {
-                'search_input': dadata
-              }
-            }).done(function(data) {
-              if (data.error)
+
+            ytfy.common.arthur_search(dadata)
+            .then(function(search_results)
+            {
+              /** Update @param result_body html table with @param result_data, map of array of items. */
+              function setResultTable(results_body, results_data)
               {
-                alert(data.error);
-              }
-              else
-              {
-                /** Update @param result_body html table with @param result_data, map of array of items. */
-                function setResultTable(results_body, results_data)
+                results_body.innerHTML = '';  // hard reset
+                for (var platform in results_data)
                 {
-                  results_body.innerHTML = '';  // hard reset
-                  for (var platform in results_data)
-                  {
-                    results_data[platform].forEach(function(element){
-                      var tr = results_body.insertRow();
+                  results_data[platform].forEach(function(element){
+                    var tr = results_body.insertRow();
 
-                      // Title
-                      var cell = tr.insertCell();
-                      cell.innerHTML = element.name;
-                      cell.style.verticalAlign = "middle";
-                      const actions = {spotify:'arthur_play_spotify_button', youtube:'arthur_play_youtube_button'};
-                      const buttons = {spotify:'btn-outline-success', youtube:'btn-outline-danger'};
+                    // Title
+                    var cell = tr.insertCell();
+                    cell.innerHTML = element.name;
+                    cell.style.verticalAlign = "middle";
+                    const actions = {spotify:'arthur_play_spotify_button', youtube:'arthur_play_youtube_button'};
+                    const buttons = {spotify:'btn-outline-success', youtube:'btn-outline-danger'};
 
-                      // Play button
-                      var btn_cell = tr.insertCell();
+                    // Play button
+                    var btn_cell = tr.insertCell();
+                    btn_cell.innerHTML = playButtonTemplate({
+                      uri:element.uri,
+                      platform_and_action:actions[platform],
+                      label: 'Play',
+                      button_style: buttons[platform],
+                    });
+
+                    btn_cell.style.verticalAlign = "middle";
+
+                    // Queue button
+                    btn_cell = tr.insertCell();
+                    if (platform == 'spotify')
+                    {
                       btn_cell.innerHTML = playButtonTemplate({
                         uri:element.uri,
-                        platform_and_action:actions[platform],
-                        label: 'Play',
+                        platform_and_action:'arthur_queue_spotify_button',
+                        label: 'Queue & Play',
                         button_style: buttons[platform],
                       });
 
                       btn_cell.style.verticalAlign = "middle";
-
-                      // Queue button
-                      btn_cell = tr.insertCell();
-                      if (platform == 'spotify')
-                      {
-                        btn_cell.innerHTML = playButtonTemplate({
-                          uri:element.uri,
-                          platform_and_action:'arthur_queue_spotify_button',
-                          label: 'Queue & Play',
-                          button_style: buttons[platform],
-                        });
-
-                        btn_cell.style.verticalAlign = "middle";
-                      }
-                      results_body.appendChild(tr);
-                    });
-                  }
+                    }
+                    results_body.appendChild(tr);
+                  });
                 }
-                setResultTable(searchResultsPlaceholder, data.filtered);
               }
-            });
-          }, false);
+
+              setResultTable(searchResultsPlaceholder, search_results);
+            })
+            .catch(alert);
+          });
 
           // https://davidwalsh.name/event-delegate
           document.getElementById("spotify-tracks").addEventListener("click", function(e) {

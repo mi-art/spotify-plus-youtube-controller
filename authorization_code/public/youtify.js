@@ -121,6 +121,23 @@ function spotify_factory()
     alert('Spotify device fell asleep, wake him up playing something!')
   }
 
+  /**
+   * Extract relevant keys from Spotify API track map.
+   * Returns empty array if no tracks
+   */
+  var extractTracksInfo = function(items) {
+    var filtered = []; // subset of api results
+    items.forEach(function(element) {
+      const artists_str = element.artists.map(a => a.name).join(", ");
+      const sub = {
+        uri: element.uri,
+        name: element.name + ' by ' + artists_str,
+      };
+      filtered.push(sub);
+    });
+    return filtered;
+  }
+
   var thaat =  {
     spotify_token:null,
 
@@ -218,15 +235,30 @@ function spotify_factory()
     },
 
 
-    /** arthur_search */
-    // use $.when() to have parallel calls
-  /**
-   * Stop spotify playback and return back whether it was playing
-   * before. Does not throw if no active device or device already
-   * stopped.
-   * 
-   * Return the promise
-   */
+    /**
+     * Get spotify tracks results for @param {string} search_input.
+     *
+     * @param {function} callback is used by async:
+     * callback(error) if error, callback(null, result) if successful
+     */
+    search_tracks: function(search_input, callback) {
+      const url = 'https://api.spotify.com/v1/search?query='
+        + encodeURIComponent(search_input)
+        + '&type=track&offset=0&limit=3'; // MAKE LIMIT A PARAM
+
+      return thaat.apiCall(url, 'GET').then(
+        (results => callback(null, extractTracksInfo(results.tracks.items))),
+        callback
+      );
+    },
+
+    /**
+     * Stop spotify playback and return back whether it was playing
+     * before. Does not throw if no active device or device already
+     * stopped.
+     *
+     * Return the promise
+     */
     arthur_pause: function(req, res)
     {
       return thaat.playable_device().then(
@@ -337,10 +369,37 @@ function spotify_factory()
   return thaat;
 }
 
+function common_factory()
+{
+  var thaat = {
+    arthur_search: function(search_input){
+      var promise;
+      if (search_input == undefined || search_input.trim().length == 0)
+      {
+        alert('Empty query');
+        promise = $.Deferred().reject('Rejecting because Empty query');
+      }
+      else
+      {
+        console.log('Looking for: ' + search_input);
+        promise = async.parallel({
+          spotify: ytfy.spotify.search_tracks.bind(null, search_input), // null for "this"
+          youtube: ytfy.spotify.search_tracks.bind(null, search_input + 'bc'), // TEMP null for "this"
+          //getYoutubeResults.bind(null, search_input),  // TODO
+        });
+      }
+      return promise;
+    },
+  };
+
+  return thaat;
+}
+
 var ytfy = {
   spotify: spotify_factory(),
   yt_player: youtube_player_factory(),
   // yt_search: TODO
+  common: common_factory(),
 };
 
 function onYouTubeIframeAPIReady() { ytfy.yt_player.onYouTubeIframeAPIReady_internal() };

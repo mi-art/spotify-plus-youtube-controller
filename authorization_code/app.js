@@ -75,22 +75,6 @@ var generateRandomString = function(length) {
   return text;
 };
 
-/**
- * Extract relevant keys from Spotify API track map.
- * Returns empty array if no tracks
- */
-var extractTracksInfo = function(items) {
-  var filtered = []; // subset of api results
-  items.forEach(function(element) {
-    const artists_str = element.artists.map(a => a.name).join(", ");
-    const sub = {
-      uri: element.uri,
-      name: element.name + ' by ' + artists_str,
-    };
-    filtered.push(sub);
-  });
-  return filtered;
-}
 
 var stateKey = 'spotify_auth_state';
 
@@ -118,49 +102,8 @@ app.get('/login', function(req, res) {
     }));
 });
 
-var getSpotifyResults = function(search_input, callback_func) {
-  var options = spotify_call_options(
-    'https://api.spotify.com/v1/search?query='
-    + encodeURIComponent(search_input)
-    + '&type=track&offset=0&limit=3');
-  request.get(options, function(error, response, body) {
-    if (!error)
-    {
-      const filtered = extractTracksInfo(body.tracks.items);
-      callback_func(null, filtered);
-    } else {
-      console.log('fuckery in search call results:');
-      console.log(error);
-      callback_func(error);
-    }
-  });
-}
 
-app.get('/arthur_search', function(req, res) {
-  var search_input = req.query.search_input;
-  if (search_input == undefined || search_input.trim().length == 0)
-  {
-    res.send({
-      error: 'Empty query'
-    });
-    res.end();
-  } else {
-    console.log('Looking for: ' + search_input);
 
-    async.parallel([
-      getSpotifyResults.bind(null, search_input), // null for "this"
-      getYoutubeResults.bind(null, search_input),
-      ],
-      function(err, results) {
-        res.send({
-          filtered:{
-            spotify: results[0],
-            youtube: results[1],
-          }
-        });
-    });
-  }
-});
 
 /**
  * Create a promise that is successful if there is an active
