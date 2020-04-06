@@ -1,1 +1,0 @@
-supervisor --timestamp  --extensions "node,js,html" --watch ".,./public" youtify_client_based.js

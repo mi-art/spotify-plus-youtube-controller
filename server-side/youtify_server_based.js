@@ -43,7 +43,7 @@ var stateKey = 'spotify_auth_state';
 var global_token = '';
 var app = express();
 
-app.use(express.static(__dirname + '/public'))
+app.use(express.static(__dirname + '/../client-side'))
    .use(cors())
    .use(cookieParser());
 
