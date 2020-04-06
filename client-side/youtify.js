@@ -1,39 +1,44 @@
+/**
+ * Helper functions to call youtube and spotify ytfy global var
+ *
+ * Implemented with some _factory function returning object. Would probably
+ * make sense to convert them to proper class if it exists.
+ * */
 var ytfy = function()
 {
 
 function youtube_player_factory()
 {
+  // sort of private vars
+  var private = {
+    player:null,
+    tag:null,
+    firstScriptTag:null,
+    firstVideo:null,
+  };
+
   var thaat = {
-
-    // sort of private vars
-    arthur_vars: {
-      player:null,
-      tag:null,
-      firstScriptTag:null,
-      firstVideo:null,
-    },
-
     playSpotifyOnVideoEnd:false,
 
-    /** Create thaat.arthur_vars.player */
+    /** Create private.player */
     initializePlayer: function(first_video_uri){
-      thaat.arthur_vars.firstVideo = first_video_uri;
+      private.firstVideo = first_video_uri;
 
       // 2. This code loads the IFrame Player API code asynchronously.
-      thaat.arthur_vars.tag = document.createElement('script');
+      private.tag = document.createElement('script');
 
-      thaat.arthur_vars.tag.src = "https://www.youtube.com/iframe_api";
-      thaat.arthur_vars.firstScriptTag = document.getElementsByTagName('script')[0];
-      thaat.arthur_vars.firstScriptTag.parentNode.insertBefore(thaat.arthur_vars.tag, thaat.arthur_vars.firstScriptTag);
+      private.tag.src = "https://www.youtube.com/iframe_api";
+      private.firstScriptTag = document.getElementsByTagName('script')[0];
+      private.firstScriptTag.parentNode.insertBefore(private.tag, private.firstScriptTag);
     },
 
     // 3. This function creates an <iframe> (and YouTube player)
     //    after the API code downloads.
     onYouTubeIframeAPIReady_internal: function() {
-      thaat.arthur_vars.player = new YT.Player('youtube-actual-player', {
+      private.player = new YT.Player('youtube-actual-player', {
         height: '270',  // minimum size required by Player API doc
         width: '100%',
-        videoId: thaat.arthur_vars.firstVideo,
+        videoId: private.firstVideo,
         events: {
           'onReady': thaat.onPlayerReady,
           'onStateChange': thaat.onPlayerStateChange,
@@ -41,7 +46,7 @@ function youtube_player_factory()
       });
 
       // clear out firstVideo to have clear error if this was to be called again.
-      thaat.arthur_vars.firstVideo = null;
+      private.firstVideo = null;
     },
 
     // 4. The API will call this function when the video player is ready.
@@ -57,11 +62,10 @@ function youtube_player_factory()
      * Play video based on its @param uri (e.g "M7lc1UVf-VE")
      *
      * On first call it loads all the youtube stuff and start vid.
-     * On next calls, loaded player is reused thanks to thaat.arthur_vars
-     * global.
+     * On next calls, loaded player is reused.
      */
     playVideo: function(uri) {
-      if (thaat.arthur_vars.player == null)
+      if (private.player == null)
       {
         console.log('Create youtube player with ' + uri);
         thaat.initializePlayer(uri);
@@ -69,7 +73,7 @@ function youtube_player_factory()
       else
       {
         console.log('Update youtube player with ' + uri);
-        thaat.arthur_vars.player.loadVideoById(uri);
+        private.player.loadVideoById(uri);
         thaat.showPlayer();
       }
     },
@@ -88,7 +92,7 @@ function youtube_player_factory()
 
         ytfy.spotify.playable_device()
         .then(
-          () => ytfy.spotify.arthur_play(),
+          () => ytfy.spotify.play(),
           function(error){
             console.log('Could not resume spotify (device probably fell asleep)');
             console.log(error);
@@ -105,9 +109,9 @@ function youtube_player_factory()
 
     /** Stop youtube video if it had been initialized before */
     stopVideo: function() {
-      if (thaat.arthur_vars.player != null)
+      if (private.player != null)
       {
-        thaat.arthur_vars.player.stopVideo();
+        private.player.stopVideo();
       }
       $('#youtube-player').hide();
     },
@@ -271,7 +275,7 @@ function spotify_factory()
      *
      * Return the promise
      */
-    arthur_pause: function(req, res)
+    pause: function(req, res)
     {
       return thaat.playable_device().then(
         function (result) {
@@ -309,7 +313,7 @@ function spotify_factory()
      * TODO: instanciate the spotify webplayback stuff and play there
      * TODO: check play api no error and statusCode === 204
      */
-    arthur_play: function(uri) {
+    play: function(uri) {
       return thaat.playable_device().then(
         function (result) {
           if (uri)
@@ -348,7 +352,7 @@ function spotify_factory()
     *   you should use the Get Information About The User’s Current Playback to check that your issued
     *   command was handled correctly by the player."
     */
-    arthur_queue: function(uri) {
+    queue: function(uri) {
       return thaat.playable_device()
       .then(
         function () {
@@ -384,7 +388,7 @@ function spotify_factory()
 function common_factory()
 {
   var thaat = {
-    arthur_search: function(search_input){
+    search: function(search_input){
       var promise;
       if (search_input == undefined || search_input.trim().length == 0)
       {

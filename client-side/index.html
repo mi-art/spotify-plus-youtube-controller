@@ -31,8 +31,8 @@
         <button class="btn btn-outline-success" onclick="ytfy.spotify.api.log_in();">Log in with your Spotify account</button>
       </div>
       <div id="loggedin_debugging">
-        <button class="btn btn-outline-success" onclick="ytfy.spotify.arthur_pause();">Pause spotify</button>
-        <button class="btn btn-outline-success" onclick="ytfy.spotify.arthur_play();">Play spotify</button>
+        <button class="btn btn-outline-success" onclick="ytfy.spotify.pause();">Pause spotify</button>
+        <button class="btn btn-outline-success" onclick="ytfy.spotify.play();">Play spotify</button>
       </div>
       <div id="loggedin">
         <div class="card border-success mb-3" title="Click to read more">
@@ -152,7 +152,7 @@
 
             var dadata = $('#search_input').val();
 
-            ytfy.common.arthur_search(dadata)
+            ytfy.common.search(dadata)
             .then(function(search_results)
             {
               /** Update @param result_body html table with @param result_data, map of array of items. */
@@ -168,7 +168,7 @@
                     var cell = tr.insertCell();
                     cell.innerHTML = element.name;
                     cell.style.verticalAlign = "middle";
-                    const actions = {spotify:'arthur_play_spotify_button', youtube:'arthur_play_youtube_button'};
+                    const actions = {spotify:'play_spotify_button', youtube:'play_youtube_button'};
                     const buttons = {spotify:'btn-outline-success', youtube:'btn-outline-danger'};
 
                     // Play button
@@ -188,7 +188,7 @@
                     {
                       btn_cell.innerHTML = playButtonTemplate({
                         uri:element.uri,
-                        platform_and_action:'arthur_queue_spotify_button',
+                        platform_and_action:'queue_spotify_button',
                         label: 'Queue & Play',
                         button_style: buttons[platform],
                       });
@@ -212,7 +212,7 @@
             {
               // Check which button was clicked
               var btnClass = null;
-              ["arthur_play_spotify_button", "arthur_queue_spotify_button", "arthur_play_youtube_button"].forEach(value => {
+              ["play_spotify_button", "queue_spotify_button", "play_youtube_button"].forEach(value => {
                 if (e.target.classList.contains(value)) {
                   btnClass = value;
                 }
@@ -220,16 +220,16 @@
 
               if (btnClass)
               {
-                if (["arthur_play_spotify_button", "arthur_queue_spotify_button"].includes(btnClass)) {
+                if (["play_spotify_button", "queue_spotify_button"].includes(btnClass)) {
                   var action_map = {
-                    "arthur_play_spotify_button":ytfy.spotify.arthur_play,
-                    "arthur_queue_spotify_button":ytfy.spotify.arthur_queue,
+                    "play_spotify_button":ytfy.spotify.play,
+                    "queue_spotify_button":ytfy.spotify.queue,
                   };
                   action_map[btnClass](e.target.value);
                   ytfy.yt_player.stopVideo();
-                } else if (btnClass == "arthur_play_youtube_button") {
+                } else if (btnClass == "play_youtube_button") {
                   ytfy.yt_player.playVideo(e.target.value);
-                  ytfy.spotify.arthur_pause()
+                  ytfy.spotify.pause()
                   .then(function(data) {
                     if (data.error)
                     {
