@@ -55,15 +55,18 @@ function spotify_api_factory(type) {
     token: null,
 
 
-    /* Taken from web-api-auth-examples/implicit-grant */
+    /**
+     * Log-in against spotify.com.
+     *
+     * After logging spotify.com send us back a token to 'redirect_uri'.
+     */
     log_in: function () {
       var client_id = '33586b0c8c344403969b1e5553969279';
-      var redirect_uri = 'http://localhost:8888/' ///callback';
-
+      var redirect_uri = [location.protocol, '//', location.host, location.pathname].join('');
       var state = generateRandomString(16);
 
       localStorage.setItem(stateKey, state);
-      var scope = 'user-read-private user-read-email user-modify-playback-state user-read-playback-state';
+      var scope = 'user-modify-playback-state user-read-playback-state';
 
       var url = 'https://accounts.spotify.com/authorize';
       url += '?response_type=token';
