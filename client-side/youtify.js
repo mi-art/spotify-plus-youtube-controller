@@ -395,7 +395,6 @@ function common_factory()
       }
       else
       {
-        console.log('Looking for: ' + search_input);
         promise = async.parallel({
           spotify: ytfy.spotify.search_tracks.bind(null, search_input), // null for "this"
           youtube: ytfy.yt_search.search_videos.bind(null, search_input), // null for "this"
