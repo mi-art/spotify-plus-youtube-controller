@@ -1,7 +1,7 @@
 /**
  * Wrapper abstracting spotify identification and api calls, for either
  * browser-only "Implicit grant" or server-side "Authorization Code".
- * 
+ *
  * So far only browser login is supported but server-side would have
  * the advantage of staying logged forever (thanks to the refresh token).
  *
@@ -58,7 +58,7 @@ function spotify_api_factory(type) {
     /**
      * Log-in against spotify.com.
      *
-     * After logging spotify.com send us back a token to 'redirect_uri'.
+     * After logging, spotify.com send us back a token to 'redirect_uri'.
      */
     log_in: function () {
       var client_id = '33586b0c8c344403969b1e5553969279';

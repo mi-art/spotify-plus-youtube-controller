@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
   <head>
-    <title>YouTify</title>
+    <title>Spotify and Youtube, on the same page.</title>
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
     <style type="text/css">
       #login, #loggedin, #loggedin_debugging, #youtube-player {
@@ -33,9 +33,6 @@
       <div id="loggedin_debugging">
         <button class="btn btn-outline-success" onclick="ytfy.spotify.arthur_pause();">Pause spotify</button>
         <button class="btn btn-outline-success" onclick="ytfy.spotify.arthur_play();">Play spotify</button>
-        <div id="user-profile">
-        </div>
-        <button class="btn btn-default" id="obtain-new-token">Obtain new token using the refresh token</button>
       </div>
       <div id="loggedin">
         <div class="card border-success mb-3" title="Click to read more">
@@ -56,17 +53,14 @@
       </div>
       <div id="youtube-player">
         <div align="right">
-          <button type="button" class="close text-danger" aria-label="Close" onclick="ytfy.yt_player.stopVideo();ytfy.yt_player.resumeSpotifyIfNeeded();">
+          <button type="button" class="close text-danger" aria-label="Close"
+                  onclick="ytfy.yt_player.stopVideo();ytfy.yt_player.resumeSpotifyIfNeeded();">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
         <div id="youtube-actual-player"></div>
       </div>
     </div>
-
-    <script id="user-profile-template" type="text/x-handlebars-template">
-      <p>Logged in on spotify as {{display_name}}</p>
-    </script>
 
     <script id="spotify-status-template" type="text/x-handlebars-template">
       <div>Spotify playback on <b>{{spotify_active_device}}</b>. If your device is
@@ -94,10 +88,6 @@
 
     <script>
       (function() {
-        var userProfileSource = document.getElementById('user-profile-template').innerHTML,
-            userProfileTemplate = Handlebars.compile(userProfileSource),
-            userProfilePlaceholder = document.getElementById('user-profile');
-
         var searchResultsPlaceholder = document.getElementById('spotify-tracks');
 
         var playButtonTemplate = Handlebars.compile(
