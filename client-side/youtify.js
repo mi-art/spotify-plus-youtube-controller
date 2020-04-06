@@ -167,11 +167,9 @@ function youtube_search_factory()
      * Called once, on client.js onload.
      */
     load_youtube_search: function(){
-      console.log('in load_youtube_search');
       gapi.client.setApiKey('AIzaSyAxHmx63rVlGpFMMWP4UNH0-mV_Bwr8ez8');
       return gapi.client.load('youtube', 'v3').then(function(){
         is_loaded = true;
-        console.log('loaded!');
       });
     },
   };
@@ -430,7 +428,6 @@ var is_logged_in;  // TODO: move it inside spotify.api
     try
     {
       var res = ytfy.spotify.api.retrieve_token().is_loggedin;
-      console.log('is_loggedin: ', res);
       resolve(res);
     }
     catch (e)

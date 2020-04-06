@@ -101,10 +101,8 @@ function spotify_api_factory(type) {
 
         // 'rate_limit_message' not handled so far
         if (typeof params['access_token'] === 'undefined') {
-          console.log('not logged in :(')
           return {is_loggedin:false};
         } else {
-          console.log('logged in :)');
           thaat.token = params['access_token'];
           return {is_loggedin:true};
         }
