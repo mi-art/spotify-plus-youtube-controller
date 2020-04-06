@@ -2,7 +2,7 @@
 
 Switch between Spotify (Premium) and Youtube playback from a single web-page.
 
-<https://spotify-plus-youtube-controller.netlify.com/>
+**<https://spotify-youtube.netlify.com/>**
 
 -----------------
 
