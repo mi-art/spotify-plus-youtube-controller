@@ -49,6 +49,7 @@ function spotify_api_factory(type) {
     return text;
   };
 
+  // state is stored locally sent to spotify and compared against spotify returned value
   const stateKey = 'spotify_auth_state';
 
   var thaat = {
@@ -74,6 +75,7 @@ function spotify_api_factory(type) {
       url += '&scope=' + encodeURIComponent(scope);
       url += '&redirect_uri=' + encodeURIComponent(redirect_uri);
       url += '&state=' + encodeURIComponent(state);
+      // url += '&show_dialog=' + encodeURIComponent(true);
 
       window.location = url;
     },
@@ -84,6 +86,9 @@ function spotify_api_factory(type) {
      * TODO: add a callback param or return a promise?
      * TODO: clear error for non-premimum accounts
      * TODO: register timeout to ask for new token before expires_in
+     *
+     * NOTE: to remove that ugly url, we'd probably have to store the token locally
+     *       and update $(location). see https://stackoverflow.com/a/59240665
      */
     retrieve_token: function() {
       var params = getHashParams();
