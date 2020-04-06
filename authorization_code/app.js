@@ -7,6 +7,10 @@
  * https://developer.spotify.com/web-api/authorization-guide/#authorization_code_flow
  */
 
+//////////   FIXME to be merged with spotify_api.js   //////////
+throw "Server-side authentification no longer working for youtify"; 
+////////////////////////////////////////////////////////////////
+
 var express = require('express'); // Express web server framework
 var request = require('request'); // "Request" library
 var cors = require('cors');
@@ -14,7 +18,7 @@ var querystring = require('querystring');
 var cookieParser = require('cookie-parser');
 
 var client_id = '33586b0c8c344403969b1e5553969279'; // Your client id
-var client_secret = '560515e6eaf64f0abab59eb35652448a'; // Your secret
+var client_secret = 'Your secret'; // Your secret
 var redirect_uri = 'http://localhost:8888/callback'; // Your redirect uri
 
 

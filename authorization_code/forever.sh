@@ -1,1 +1,1 @@
-supervisor --timestamp  --extensions "node,js,html" --watch ".,./public" app.js
+supervisor --timestamp  --extensions "node,js,html" --watch ".,./public" youtify_client_based.js
