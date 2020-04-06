@@ -200,75 +200,8 @@ function spotify_factory()
   }
 
   var thaat =  {
-    spotify_token:null,
 
-    /**
-     * Obtains parameters from the hash of the URL
-     * @return Object
-     *
-     * Taken from web-api-auth-examples/implicit-grant
-     */
-    getHashParams: function() {
-      var hashParams = {};
-      var e, r = /([^&;=]+)=?([^&;]*)/g,
-          q = window.location.hash.substring(1);
-      while ( e = r.exec(q)) {
-          hashParams[e[1]] = decodeURIComponent(e[2]);
-      }
-      return hashParams;
-    },
-
-    /* Taken from web-api-auth-examples/implicit-grant */
-    log_in: function() {
-      var client_id = '33586b0c8c344403969b1e5553969279';
-      var redirect_uri = 'http://localhost:8888/callback';
-
-      var state = generateRandomString(16);
-
-      localStorage.setItem(stateKey, state);
-      var scope = 'user-read-private user-read-email user-modify-playback-state user-read-playback-state';
-
-      var url = 'https://accounts.spotify.com/authorize';
-      url += '?response_type=token';
-      url += '&client_id=' + encodeURIComponent(client_id);
-      url += '&scope=' + encodeURIComponent(scope);
-      url += '&redirect_uri=' + encodeURIComponent(redirect_uri);
-      url += '&state=' + encodeURIComponent(state);
-
-      window.location = url;
-    },
-
-
-    /** Taken from exportify */
-    apiCall: function(url, method, body) {
-      var options = {
-        url: url,
-        headers: {
-          'Authorization': 'Bearer ' + thaat.spotify_token,
-        },
-        method:method,
-      };
-      if (body)
-      {
-        // https://stackoverflow.com/a/43268197
-        options.dataType = 'json';
-        options.data = JSON.stringify(body);
-        options.contentType = 'application/json; charset=utf-8';
-      }
-      return $.ajax(options).fail(function (jqXHR, textStatus) {
-        if (jqXHR.status == 401) {
-          // Return to home page after auth token expiry
-          window.location = window.location.href.split('#')[0]
-        // } else if (jqXHR.status == 429) {
-        //   // API Rate-limiting encountered
-        //   window.location = window.location.href.split('#')[0] + '?rate_limit_message=true'
-        } else {
-          // Otherwise report the error so user can raise an issue
-          alert(jqXHR.responseText);
-        }
-      })
-    },
-
+    api: spotify_api_factory('client'),
 
     /**
      * Create a promise that is successful if there is an active
@@ -278,7 +211,7 @@ function spotify_factory()
     playable_device: function ()
     {
       var promise = new Promise(function(resolve, reject) {
-        thaat.apiCall('https://api.spotify.com/v1/me/player', 'GET').then(function(response) {
+        thaat.api.call('https://api.spotify.com/v1/me/player', 'GET').then(function(response) {
           if (response == undefined)
           {
             reject('No device available');
@@ -299,7 +232,7 @@ function spotify_factory()
      * Return a promise that resolve with the device name (or "NO DEVICE")
      */
     spotify_active_device: function() {
-      if (thaat.spotify_token == '')  // not nice, should be handled by apiCall
+      if (thaat.spotify_token == '')  // not nice, should be handled by api.call
       {
         return $.Deferred().reject('Rejecting because no token');
       }
@@ -325,7 +258,7 @@ function spotify_factory()
         + encodeURIComponent(search_input)
         + '&type=track&offset=0&limit=3'; // MAKE LIMIT A PARAM
 
-      return thaat.apiCall(url, 'GET').then(
+      return thaat.api.call(url, 'GET').then(
         (results => callback(null, extractTracksInfo(results.tracks.items))),
         callback
       );
@@ -346,7 +279,7 @@ function spotify_factory()
           if (result.is_playing)
           {
             // do actually Pause
-            thaat.apiCall('https://api.spotify.com/v1/me/player/pause', 'PUT').fail(function(error){
+            thaat.api.call('https://api.spotify.com/v1/me/player/pause', 'PUT').fail(function(error){
               console.log(' pause failed with :');
               console.log( error);
             });
@@ -384,7 +317,7 @@ function spotify_factory()
             console.log('Triggering ' + uri);
 
             var values = {uris: [uri]};
-            thaat.apiCall('https://api.spotify.com/v1/me/player/play', 'PUT', values);
+            thaat.api.call('https://api.spotify.com/v1/me/player/play', 'PUT', values);
           }
           else if (result.is_playing)
           {
@@ -393,7 +326,7 @@ function spotify_factory()
           else
           {
             console.log('Play again what was playing');
-            thaat.apiCall('https://api.spotify.com/v1/me/player/play', 'PUT');
+            thaat.api.call('https://api.spotify.com/v1/me/player/play', 'PUT');
           }
 
         },
@@ -422,14 +355,14 @@ function spotify_factory()
           async.series([
             function(callback) {
               console.log('Queue ' + uri);
-              thaat.apiCall('https://api.spotify.com/v1/me/player/queue?uri=' + uri, 'POST')
+              thaat.api.call('https://api.spotify.com/v1/me/player/queue?uri=' + uri, 'POST')
               .then(function() {
                 callback();
               });
             },
             function(callback) {
               console.log('Next');
-              thaat.apiCall('https://api.spotify.com/v1/me/player/next', 'POST')
+              thaat.api.call('https://api.spotify.com/v1/me/player/next', 'POST')
               .then(function() {
                 callback();
               });
@@ -485,16 +418,20 @@ return {
 // globals next to ytfy
 var onYouTubeIframeAPIReady = ytfy.yt_player.onYouTubeIframeAPIReady_internal;
 var googleApiClientReady = ytfy.yt_search.load_youtube_search;
-
+var is_logged_in;  // TODO: move it inside spotify.api
 // main function
-// TODO: clear error for non-premimum accounts
 (function() {
-  var params = ytfy.spotify.getHashParams();
-  // 'rate_limit_message' not handled so far
-  if (typeof params['access_token'] === 'undefined') {
-    console.log('not logged in :(')
-  } else {
-    console.log('logged in :)');// With token ' + params['access_token']);
-    ytfy.spotify.spotify_token = params['access_token'];
-  }
+
+  is_logged_in = new Promise(function(resolve, reject) {
+    try
+    {
+      var res = ytfy.spotify.api.retrieve_token().is_loggedin;
+      console.log('is_loggedin: ', res);
+      resolve(res);
+    }
+    catch (e)
+    {
+      reject(e);
+    }
+  });
 })();

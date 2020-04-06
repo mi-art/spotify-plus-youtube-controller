@@ -28,14 +28,12 @@
         </div>
       </div>
       <div id="login">
-        <a href="/login" class="btn btn-outline-success">Log in with your Spotify account</a>
+        <button class="btn btn-outline-success" onclick="ytfy.spotify.api.log_in();">Log in with your Spotify account</button>
       </div>
       <div id="loggedin_debugging">
         <button class="btn btn-outline-success" onclick="ytfy.spotify.arthur_pause();">Pause spotify</button>
         <button class="btn btn-outline-success" onclick="ytfy.spotify.arthur_play();">Play spotify</button>
         <div id="user-profile">
-        </div>
-        <div id="oauth">
         </div>
         <button class="btn btn-default" id="obtain-new-token">Obtain new token using the refresh token</button>
       </div>
@@ -96,14 +94,6 @@
       will resume if it was playing before (assuming the device did not go offline).</div>
     </script>
 
-    <script id="oauth-template" type="text/x-handlebars-template">
-      <h2>oAuth info</h2>
-      <dl class="dl-horizontal">
-        <dt>Access token</dt><dd class="text-overflow">{{access_token}}</dd>
-        <dt>Refresh token</dt><dd class="text-overflow">{{refresh_token}}</dd>
-      </dl>
-    </script>
-
     <script id="play_or_queue-button-common-template" type="text/x-handlebars-template">
       <button class="btn btn-sm {{button_style}} {{platform_and_action}}" type="submit" value={{uri}}>{{label}}</button>
     </script>
@@ -113,6 +103,7 @@
       dependencies: youtify.js to be loaded before google client so
       that googleApiClientReady is already declared
     -->
+    <script type="text/javascript" src="spotify_api.js"></script>
     <script type="text/javascript" src="youtify.js"></script>
     <script src="https://apis.google.com/js/client.js?onload=googleApiClientReady"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/2.0.0-alpha.1/handlebars.min.js"></script>
@@ -138,10 +129,6 @@
         var userProfileSource = document.getElementById('user-profile-template').innerHTML,
             userProfileTemplate = Handlebars.compile(userProfileSource),
             userProfilePlaceholder = document.getElementById('user-profile');
-
-        var oauthSource = document.getElementById('oauth-template').innerHTML,
-            oauthTemplate = Handlebars.compile(oauthSource),
-            oauthPlaceholder = document.getElementById('oauth');
 
         var searchResultsPlaceholder = document.getElementById('spotify-tracks');
 
@@ -183,34 +170,13 @@
           updateSpotifyStatus();
         });
 
-        var params = getHashParams();
 
-        var access_token = params.access_token,
-            refresh_token = params.refresh_token,
-            error = params.error;
+        is_logged_in.catch(alert).then(function(is_logged_in) {
+          console.log('in html bro with is_logged_in=', is_logged_in)
+          if (is_logged_in) {
 
-        if (error) {
-          alert('There was an error during the authentication');
-        } else {
-          if (access_token) {
-            // render oauth info
-            oauthPlaceholder.innerHTML = oauthTemplate({
-              access_token: access_token,
-              refresh_token: refresh_token
-            });
-
-            $.ajax({
-                url: 'https://api.spotify.com/v1/me',
-                headers: {
-                  'Authorization': 'Bearer ' + access_token
-                },
-                success: function(response) {
-                  userProfilePlaceholder.innerHTML = userProfileTemplate(response);
-
-                  $('#login').hide();
-                  $('#loggedin').show();
-                }
-            });
+            $('#login').hide();
+            $('#loggedin').show();
 
             startActivityRefresh(); // 1st to create timer
             updateSpotifyStatus(); // second, to be sure timer exist when it has to be cancelled
@@ -220,21 +186,6 @@
               $('#login').show();
               $('#loggedin').hide();
           }
-
-          document.getElementById('obtain-new-token').addEventListener('click', function() {
-            $.ajax({
-              url: '/refresh_token',
-              data: {
-                'refresh_token': refresh_token
-              }
-            }).done(function(data) {
-              access_token = data.access_token;
-              oauthPlaceholder.innerHTML = oauthTemplate({
-                access_token: access_token,
-                refresh_token: refresh_token
-              });
-            });
-          }, false);
 
           document.getElementById('track_search_form').addEventListener('submit', function(event){
             // to avoid the page refresh, source:
@@ -335,7 +286,7 @@
               }
             }
           });
-        }
+        });
       })();
     </script>
   </body>
