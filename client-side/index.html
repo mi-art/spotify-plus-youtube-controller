@@ -28,18 +28,21 @@
   <body>
     <div class="container">
       <div class="card text-white bg-dark" style="width: 100%;">
-         <!-- remove mb-3 when no details below-->
         <div class="card-body">
           <div class="row">
+            <!-- FIXME align those two elems vertically -->
             <div class="d-inline-block text-truncate col col-md">
               <b>Spotify and Youtube</b> on the same page.
             </div>
-            <div class="col-auto">
-              <a href="/show_window">More</a>
+            <div class="col col-auto">
+              <button type="button" class="btn btn-link" data-toggle="modal" data-target="#exampleModal">
+                <b>?</b>
+              </button>
             </div>
           </div>
         </div>
       </div>
+
       <div id="login">
         <button class="btn btn-outline-success" onclick="ytfy.spotify.api.log_in();">Log in with your Spotify account</button>
       </div>
@@ -48,13 +51,6 @@
         <button class="btn btn-outline-success" onclick="ytfy.spotify.play();">Play spotify</button>
       </div>
       <div id="loggedin">
-        <div class="card border-success mb-3" title="Click to read more">
-          <div class="card-body text-success p-2">
-            <span id="ellipsis-ex" class="card-text d-inline-block text-truncate small" style="max-width: 100%;">
-              <div id="spotify-status"></div>
-            </span>
-          </div>
-        </div>
         <form id="track_search_form" class="mb-3">
           <input type="text" class="form-control" placeholder="Type track's title and press enter"
           aria-label="Track's title" aria-describedby="basic-addon2" id="search_input">
@@ -74,17 +70,41 @@
         <div id="youtube-actual-player"></div>
       </div>
     </div>
-
     <script id="spotify-status-template" type="text/x-handlebars-template">
-      <div>Spotify playback on <b>{{spotify_active_device}}</b>. If your device is
-      not showing up, wake it up by playing some stuff directly on it. Please note that,
-      in the search results, <b>Play</b> directly plays the song while <b>Queue & Play</b> adds
-      it to the queue and jumps to it (assuming queue was empty before). Finally, when playing a
-      Youtube video, Spotify gets paused. When video ends or when you close it, Spotify playback
-      will resume if it was playing before (assuming the device did not go offline).
-      <small><a href="https://icons8.com/icon/116712/spotify">Spotify icon by Icons8</a></small>.
-    </div>
+      <p>Spotify playback on <b>{{spotify_active_device}}</b>.</p>
+      <p>If your device is not showing up, wake it up by playing some stuff directly on it.</p>
     </script>
+
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Help</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div id="spotify-status">
+              <!-- Will be replaced once logged-in -->
+              <p>You first need to log in with your spotify account.</p>
+            </div>
+            <p>In the search results, <b>Play</b> directly plays the song while <b>Queue & Play</b> adds
+              it to the queue and jumps to it (assuming queue was empty before). Finally, when playing a
+              Youtube video, Spotify gets paused. When video ends or when you close it, Spotify playback
+              will resume if it was playing before (assuming the device did not go offline).</p>
+              <p class="small">
+                Code hosted on <a href="https://github.com/mi-art/spotify-plus-youtube-controller">GitHub</a>.
+                Spotify icon by <a href="https://icons8.com/icon/116712/spotify">Icons8</a>.
+              </p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <script id="play_or_queue-button-common-template" type="text/x-handlebars-template">
       <button class="btn btn-sm {{button_style}} {{platform_and_action}}" type="submit" value={{uri}}>{{label}}</button>
@@ -113,8 +133,7 @@
         var spotifyStatusTemplate = Handlebars.compile((document.getElementById('spotify-status-template').innerHTML));
         var spotifyStatusPlaceholder = document.getElementById('spotify-status');
 
-        var timer;
-        var collapsableStatusText;
+        var timer = null;
         function updateSpotifyStatus()
         {
           ytfy.spotify.spotify_active_device()
@@ -122,8 +141,6 @@
             spotifyStatusPlaceholder.innerHTML = spotifyStatusTemplate({
               spotify_active_device:data
             });
-            // re-compute each time
-            collapsableStatusText = document.getElementById("ellipsis-ex");
 
           }).catch(function(err) {
             console.log('Could not refresh device name', err);
@@ -131,19 +148,20 @@
           });
         }
         function startActivityRefresh() {
-          const refresh_rate_seconds = 30;
-          timer = setInterval(updateSpotifyStatus, refresh_rate_seconds*1000)
+          const refresh_rate_seconds = 10;  // problematic if help window remains open
+          if (timer)
+          {
+            console.log('LogicError: Timer previously created was not cleared.');
+            cancelActivityRefresh();
+          }
+
+          updateSpotifyStatus(); // first time
+          timer = setInterval(updateSpotifyStatus, refresh_rate_seconds * 1000);
         }
         function cancelActivityRefresh() {
           clearInterval(timer);
+          timer = null;
         }
-        function toggleSpotifyStatus() {
-          collapsableStatusText.classList.toggle("text-truncate");
-        };
-        spotifyStatusPlaceholder.addEventListener("click", function(e) {
-          toggleSpotifyStatus();
-          updateSpotifyStatus();
-        });
 
 
         ytfy.spotify.api.is_loggedin()
@@ -156,8 +174,8 @@
             $('#login').hide();
             $('#loggedin').show();
 
-            startActivityRefresh(); // 1st to create timer
-            updateSpotifyStatus(); // second, to be sure timer exist when it has to be cancelled
+            $('#exampleModal').on('show.bs.modal', startActivityRefresh);
+            $('#exampleModal').on('hidden.bs.modal', cancelActivityRefresh);
 
           } else {
               // render initial screen
