@@ -403,12 +403,16 @@ function spotify_factory()
 function common_factory()
 {
   var thaat = {
+    /**
+     * Look for @param {string} search_input on both platforms and
+     * @return {Promise} that resolves with an object of arrays or
+     * an empty object if no input.
+     * */
     search: function(search_input){
       var promise;
       if (search_input == undefined || search_input.trim().length == 0)
       {
-        alert('Empty query');
-        promise = $.Deferred().reject('Rejecting because Empty query');
+        promise = $.Deferred().resolve({});
       }
       else
       {
