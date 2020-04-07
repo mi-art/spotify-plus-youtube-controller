@@ -388,6 +388,15 @@ function spotify_factory()
     },
 
   };  // end of thaat
+
+
+  // Back to home page on token expiry
+  thaat.api.token_expiry_side_effect = function()
+  {
+    alert('Spotify token expired, you will have to log in again');
+    window.location = window.location.href.split('#')[0];
+  }
+
   return thaat;
 }
 

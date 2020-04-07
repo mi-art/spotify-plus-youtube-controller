@@ -55,6 +55,8 @@ function spotify_api_factory(type) {
   var thaat = {
     token: null,
 
+    /** Called on api.call failure (default: nothing) */
+    token_expiry_side_effect: () => {},
 
     /**
      * Log-in against spotify.com.
@@ -149,14 +151,10 @@ function spotify_api_factory(type) {
       }
       return $.ajax(options).fail(function (jqXHR, textStatus) {
         if (jqXHR.status == 401) {
-          // TODO: Return to home page after auth token expiry
-          alert('token expiry');
-          //window.location = window.location.href.split('#')[0]
-          // } else if (jqXHR.status == 429) {
-          //   // API Rate-limiting encountered
-          //   window.location = window.location.href.split('#')[0] + '?rate_limit_message=true'
+          thaat.token_expiry_side_effect();
         } else {
           // Otherwise report the error so user can raise an issue
+          // status 429 (API Rate-limiting) not handled for now
           alert(jqXHR.responseText);
         }
       })
