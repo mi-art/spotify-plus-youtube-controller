@@ -427,19 +427,3 @@ return {
 // globals next to ytfy
 var onYouTubeIframeAPIReady = ytfy.yt_player.onYouTubeIframeAPIReady_internal;
 var googleApiClientReady = ytfy.yt_search.load_youtube_search;
-var is_logged_in;  // TODO: move it inside spotify.api
-// main function
-(function() {
-
-  is_logged_in = new Promise(function(resolve, reject) {
-    try
-    {
-      var res = ytfy.spotify.api.retrieve_token().is_loggedin;
-      resolve(res);
-    }
-    catch (e)
-    {
-      reject(e);
-    }
-  });
-})();

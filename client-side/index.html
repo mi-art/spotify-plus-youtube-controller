@@ -137,7 +137,11 @@
         });
 
 
-        is_logged_in.catch(alert).then(function(is_logged_in) {
+        ytfy.spotify.api.is_loggedin()
+        .catch(function(error) {
+          alert(error);
+          return false; // not logged in
+        }).then(function(is_logged_in) {
           if (is_logged_in) {
 
             $('#login').hide();

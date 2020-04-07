@@ -114,6 +114,23 @@ function spotify_api_factory(type) {
       }
     },
 
+    /**
+     * @return {Promise} that resolves with loggedin status, and
+     * reject on token parsing error.
+     */
+    is_loggedin: function() {
+      return new Promise(function(resolve, reject) {
+        try
+        {
+          var res = thaat.retrieve_token().is_loggedin;
+          resolve(res);
+        }
+        catch (e)
+        {
+          reject(e);
+        }
+      });
+    },
 
     /** Call spotify api */
     call: function (url, method, body) {
