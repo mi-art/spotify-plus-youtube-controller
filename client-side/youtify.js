@@ -17,6 +17,8 @@ function youtube_player_factory()
     firstVideo:null,
   };
 
+  function page_domain() {return [location.protocol, '//', location.host].join('')};
+
   var thaat = {
     playSpotifyOnVideoEnd:false,
 
@@ -43,6 +45,7 @@ function youtube_player_factory()
           'onReady': thaat.onPlayerReady,
           'onStateChange': thaat.onPlayerStateChange,
         },
+        playerVars:{origin: page_domain()},
       });
 
       // clear out firstVideo to have clear error if this was to be called again.
