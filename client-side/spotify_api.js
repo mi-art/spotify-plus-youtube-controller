@@ -62,6 +62,9 @@ function spotify_api_factory(type) {
      * Log-in against spotify.com.
      *
      * After logging, spotify.com send us back a token to 'redirect_uri'.
+     *
+     * FIXME: stored stateKey stops user from going back to page without getting
+     *        an ugly auth error alert
      */
     log_in: function () {
       var client_id = '33586b0c8c344403969b1e5553969279';

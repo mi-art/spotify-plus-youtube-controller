@@ -56,7 +56,7 @@
           aria-label="Track's title" aria-describedby="basic-addon2" id="search_input">
         </form>
         <table class="table table-striped small">
-          <tbody id="spotify-tracks"></tbody>
+          <tbody id="search-results"></tbody>
         </table>
         <div id="status"></div>
       </div>
@@ -125,7 +125,7 @@
 
     <script>
       (function() {
-        var searchResultsPlaceholder = document.getElementById('spotify-tracks');
+        var searchResultsPlaceholder = document.getElementById('search-results');
 
         var playButtonTemplate = Handlebars.compile(
           document.getElementById('play_or_queue-button-common-template').innerHTML);
@@ -244,7 +244,7 @@
           });
 
           // https://davidwalsh.name/event-delegate
-          document.getElementById("spotify-tracks").addEventListener("click", function(e) {
+          document.getElementById("search-results").addEventListener("click", function(e) {
             // e.target is the clicked element!
             if(e.target)
             {

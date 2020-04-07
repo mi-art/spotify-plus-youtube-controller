@@ -285,7 +285,6 @@ function spotify_factory()
     {
       return thaat.playable_device().then(
         function (result) {
-          console.log(result);
           if (result.is_playing)
           {
             // do actually Pause
