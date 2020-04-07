@@ -66,6 +66,10 @@ function youtube_player_factory()
      *
      * On first call it loads all the youtube stuff and start vid.
      * On next calls, loaded player is reused.
+     *
+     * FIXME: if playVideo triggered twice quickly, second call will
+     *        crash because private.player not null but not fully
+     *        loaded yet
      */
     playVideo: function(uri) {
       if (private.player == null)
