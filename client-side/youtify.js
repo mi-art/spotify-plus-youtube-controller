@@ -165,6 +165,11 @@ function youtube_search_factory()
 
     /**
      * Called once, on client.js onload.
+     *
+     * FIXME: Caling this as is from html raises Content Security Policy
+     * warnings because it injects code from elsewhere. See:
+     * - https://stackoverflow.com/a/13230948
+     * - https://developer.mozilla.org/fr/docs/Web/HTTP/CSP
      */
     load_youtube_search: function(){
       gapi.client.setApiKey('AIzaSyAxHmx63rVlGpFMMWP4UNH0-mV_Bwr8ez8');
