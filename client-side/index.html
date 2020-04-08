@@ -27,20 +27,16 @@
 
   <body>
     <div class="container">
-      <div class="card text-white bg-dark" style="width: 100%;">
-        <div class="card-body">
+      <div class="card text-white bg-dark my-1" style="width: 100%;">
+        <div class="card-body p-2">
           <div class="row">
-            <!-- align those two elems vertically
-              https://stackoverflow.com/questions/1367409/how-to-make-button-look-like-a-link
-              padding:0 with <p> tag seems to do the trick-->
-            <div class="d-inline-block text-truncate col col-md">
-              <p><b>Spotify and Youtube on the same page.</b></p>
-            </div>
-            <div class="col col-auto">
-              <button type="button" class="btn btn-link" style="padding:inherit;" data-toggle="modal" data-target="#exampleModal">
-                <p><b>?</b></p>
-              </button>
-            </div>
+          <div class="d-inline-block text-truncate col col-md">
+            <b>Spotify and Youtube on the same page</b>
+          </div>
+          <div class="col col-auto">
+            <!-- (hack) should be a button, but too tricky to make it look like an aligned link -->
+            <a href="#" title="perform some js action" onclick="$('#exampleModal').modal('show');"><b>?</b></a>
+          </div>
           </div>
         </div>
       </div>
@@ -79,7 +75,7 @@
 
     <!-- Modal -->
     <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-      <div class="modal-dialog" role="document">
+      <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title" id="exampleModalLabel">Help</h5>
