@@ -86,7 +86,7 @@
           <div class="modal-body">  
             <p>Switch between <span class="text-success">Spotify</span> and <span class="text-danger">Youtube</span> playback from a single web-page.</p>
             <p>
-              <span class="text-success">Play</span> directly plays the song while <span class="text-success">Queue & Play</span> adds
+              <span class="text-success">Play</span> directly plays the song while <span class="text-success">QPlay</span> adds
               it to the queue and jumps to it (assuming queue was empty before).
               <span class="text-danger">Play</span> start the Youtube video and stops Spotify.
               When video ends or when you close it, Spotify playback will resume what it was playing before (assuming the device did not go offline).
@@ -230,7 +230,7 @@
                     btn_cell = tr.insertCell();
                     if (platform == 'spotify')
                     {
-                      btn_cell.innerHTML = generateButton(platform, 'Queue & Play', element.uri);
+                      btn_cell.innerHTML = generateButton(platform, 'QPlay', element.uri);
                       btn_cell.style.verticalAlign = "middle";
                     }
                     results_body.appendChild(tr);
