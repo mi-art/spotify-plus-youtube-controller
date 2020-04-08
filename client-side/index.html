@@ -46,7 +46,7 @@
       </div>
 
       <div id="login">
-        <button class="btn btn-outline-success" onclick="ytfy.spotify.api.log_in();">Log in with your Spotify account</button>
+        <button class="btn btn-outline-success" onclick="ytfy.spotify.api.log_in();">Log in with your Spotify (Premium) account</button>
       </div>
       <div id="loggedin_debugging">
         <button class="btn btn-outline-success" onclick="ytfy.spotify.pause();">Pause spotify</button>
@@ -73,8 +73,8 @@
       </div>
     </div>
     <script id="spotify-status-template" type="text/x-handlebars-template">
-      <p>Spotify playback on <b>{{spotify_active_device}}</b>.</p>
-      <p>If your device is not showing up, wake it up by playing some stuff directly on it.</p>
+      <span>:<span class="text-success"> {{spotify_active_device}}</span>.
+        (If your device is not showing up, wake it up by playing some stuff directly on it.)</span>
     </script>
 
     <!-- Modal -->
@@ -87,23 +87,23 @@
               <span aria-hidden="true">&times;</span>
             </button>
           </div>
-          <div class="modal-body">
-            <div id="spotify-status">
-              <!-- Will be replaced once logged-in -->
-              <p>You first need to log in with your spotify account.</p>
-            </div>
-            <p>In the search results, <b>Play</b> directly plays the song while <b>Queue & Play</b> adds
-              it to the queue and jumps to it (assuming queue was empty before). Finally, when playing a
-              Youtube video, Spotify gets paused. When video ends or when you close it, Spotify playback
-              will resume if it was playing before (assuming the device did not go offline).</p>
-              <p class="small">
-                Code hosted on <a href="https://github.com/mi-art/spotify-plus-youtube-controller">GitHub</a>.
-                Spotify icon by <a href="https://icons8.com/icon/116712/spotify">Icons8</a>.
-              </p>
+          <div class="modal-body">  
+            <p>Switch between <span class="text-success">Spotify</span> and <span class="text-danger">Youtube</span> playback from a single web-page.</p>
+            <p>
+              <span class="text-success">Play</span> directly plays the song while <span class="text-success">Queue & Play</span> adds
+              it to the queue and jumps to it (assuming queue was empty before).
+              <span class="text-danger">Play</span> start the Youtube video and stops Spotify.
+              When video ends or when you close it, Spotify playback will resume what it was playing before (assuming the device did not go offline).
+            </p>
+            <p>Youtube videos are directly played on this page while Spotify plays from your active device<span id="spotify-status">.</span></p>
+            <p class="small">
+              Code hosted on <a href="https://github.com/mi-art/spotify-plus-youtube-controller">GitHub</a>.
+              Spotify icon by <a href="https://icons8.com/icon/116712/spotify">Icons8</a>.
+            </p>
           </div>
-          <div class="modal-footer">
+          <!-- <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-          </div>
+          </div> -->
         </div>
       </div>
     </div>
