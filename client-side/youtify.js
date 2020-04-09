@@ -396,7 +396,13 @@ function spotify_factory()
   // Back to home page on token expiry
   thaat.api.token_expiry_side_effect = function()
   {
-    alert('Spotify token expired, you will have to log in again');
+    console.log('Spotify token expired, you will have to log in again');
+    window.location = window.location.href.split('#')[0];
+  }
+
+  thaat.api.authentification_failure_side_effect = function()
+  {
+    console.log('There was an error during the authentication, you will have to log in again');
     window.location = window.location.href.split('#')[0];
   }
 

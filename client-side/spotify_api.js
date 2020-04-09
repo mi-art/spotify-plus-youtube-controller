@@ -57,6 +57,8 @@ function spotify_api_factory(type) {
 
     /** Called on api.call failure (default: nothing) */
     token_expiry_side_effect: () => {},
+    /** Called on hash param parsing failure (default: nothing) */
+    authentification_failure_side_effect: () => {},
 
     /**
      * Log-in against spotify.com.
@@ -103,7 +105,8 @@ function spotify_api_factory(type) {
       storedState = localStorage.getItem(stateKey);
 
       if (access_token && (state == null || state !== storedState)) {
-        throw 'There was an error during the authentication';
+        thaat.authentification_failure_side_effect();
+        return {is_loggedin:false};
       }
       else
       {
