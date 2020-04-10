@@ -355,6 +355,9 @@ function spotify_factory()
     *  - Not done, but from  API doc"Due to the asynchronous nature of the issuance of the command,
     *   you should use the Get Information About The User’s Current Playback to check that your issued
     *   command was handled correctly by the player."
+    *
+    * NOTE:
+    *  - Spotify.Player#getCurrentState (from web-playback-sdk) gives access to the queue
     */
     queue: function(uri) {
       return thaat.playable_device()
@@ -396,13 +399,13 @@ function spotify_factory()
           });
 
           // Error handling
-          player.addListener('initialization_error', ({ message }) => { console.error(message); });
-          player.addListener('authentication_error', ({ message }) => { console.error(message); });
-          player.addListener('account_error', ({ message }) => { console.error(message); });
-          player.addListener('playback_error', ({ message }) => { console.error(message); });
+          player.addListener('initialization_error', console.error);
+          player.addListener('authentication_error', console.error);
+          player.addListener('account_error', console.error);
+          player.addListener('playback_error', console.error);
 
           // Playback status updates
-          player.addListener('player_state_changed', state => { console.log(state); });
+          player.addListener('player_state_changed', console.log);
 
           // Ready
           player.addListener('ready', ({ device_id }) => {
