@@ -122,22 +122,30 @@ function spotify_api_factory(type) {
       }
     },
 
+    _is_loggedin:null,  // unique (private) promise
+
     /**
      * @return {Promise} that resolves with loggedin status, and
-     * reject on token parsing error.
+     * reject on token parsing error. If called several times,
+     * the same promise is returned (and not a new one).
      */
     is_loggedin: function() {
-      return new Promise(function(resolve, reject) {
-        try
-        {
-          var res = thaat.retrieve_token().is_loggedin;
-          resolve(res);
-        }
-        catch (e)
-        {
-          reject(e);
-        }
-      });
+      if (thaat._is_loggedin == null)
+      {
+        thaat._is_loggedin = new Promise(function(resolve, reject) {
+          try
+          {
+            var res = thaat.retrieve_token().is_loggedin;
+            resolve(res);
+          }
+          catch (e)
+          {
+            reject(e);
+          }
+        });
+      }
+
+      return thaat._is_loggedin;
     },
 
     /** Call spotify api */
