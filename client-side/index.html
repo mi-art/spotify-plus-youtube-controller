@@ -125,21 +125,8 @@
       (function() {
         var searchResultsPlaceholder = document.getElementById('search-results');
 
-        const playButtonTemplate = Handlebars.compile(
+        var playButtonTemplate = Handlebars.compile(
           document.getElementById('play_or_queue-button-common-template').innerHTML);
-
-        function generateButton(platform_, label_, uri_)
-        {
-          const actions = {spotify:'play_spotify_button', youtube:'play_youtube_button'};
-          const buttons = {spotify:'btn-outline-success', youtube:'btn-outline-danger'};
-
-          return playButtonTemplate({
-                        uri:uri_,
-                        platform_and_action:actions[platform_],
-                        label: label_,
-                        button_style: buttons[platform_],
-                      });
-        }
 
         var spotifyStatusTemplate = Handlebars.compile((document.getElementById('spotify-status-template').innerHTML));
         var spotifyStatusPlaceholder = document.getElementById('spotify-status');
@@ -222,7 +209,12 @@
 
                     // Play button
                     var btn_cell = tr.insertCell();
-                    btn_cell.innerHTML = generateButton(platform, 'Play', element.uri);
+                    btn_cell.innerHTML = playButtonTemplate({
+                      uri:element.uri,
+                      platform_and_action:actions[platform],
+                      label: 'Play',
+                      button_style: buttons[platform],
+                    });
 
                     btn_cell.style.verticalAlign = "middle";
 
@@ -230,7 +222,13 @@
                     btn_cell = tr.insertCell();
                     if (platform == 'spotify')
                     {
-                      btn_cell.innerHTML = generateButton(platform, 'QPlay', element.uri);
+                      btn_cell.innerHTML = playButtonTemplate({
+                        uri:element.uri,
+                        platform_and_action:'queue_spotify_button',
+                        label: 'QPlay',
+                        button_style: buttons[platform],
+                      });
+
                       btn_cell.style.verticalAlign = "middle";
                     }
                     results_body.appendChild(tr);
