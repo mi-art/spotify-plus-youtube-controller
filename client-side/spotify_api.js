@@ -74,7 +74,10 @@ function spotify_api_factory(type) {
       var state = generateRandomString(16);
 
       localStorage.setItem(stateKey, state);
-      var scope = 'user-modify-playback-state user-read-playback-state';
+      var scope = [
+        'user-modify-playback-state', 'user-read-playback-state',
+        "streaming", "user-read-email", "user-read-private" // for web-playback
+      ].join(' ');
 
       var url = 'https://accounts.spotify.com/authorize';
       url += '?response_type=token';
@@ -147,6 +150,9 @@ function spotify_api_factory(type) {
 
       return thaat._is_loggedin;
     },
+
+    /** Call @param {Function} cb with spotify token (no check)*/
+    getOAuthToken: cb => cb(thaat.token),
 
     /** Call spotify api */
     call: function (url, method, body) {

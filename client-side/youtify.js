@@ -213,6 +213,8 @@ function spotify_factory()
     return filtered;
   }
 
+  var player = null;
+
   var thaat =  {
 
     api: spotify_api_factory('client'),
@@ -390,6 +392,43 @@ function spotify_factory()
         });
     },
 
+    /** Create player and start playing on it */
+    initializeWebPlayback: function() {
+      thaat.api.is_loggedin().then(function(is_logged) {
+        if (is_logged)
+        {
+          player = new Spotify.Player({
+            name: 'Spotify and Youtube on the same page',
+            getOAuthToken: thaat.api.getOAuthToken,
+          });
+
+          // Error handling
+          player.addListener('initialization_error', ({ message }) => { console.error(message); });
+          player.addListener('authentication_error', ({ message }) => { console.error(message); });
+          player.addListener('account_error', ({ message }) => { console.error(message); });
+          player.addListener('playback_error', ({ message }) => { console.error(message); });
+
+          // Playback status updates
+          player.addListener('player_state_changed', state => { console.log(state); });
+
+          // Ready
+          player.addListener('ready', ({ device_id }) => {
+            console.log('Ready with Device ID', device_id);
+            // Switch to it
+            thaat.api.call("https://api.spotify.com/v1/me/player", "PUT", {device_ids:[device_id], play:true});
+          });
+
+          // Not Ready
+          player.addListener('not_ready', ({ device_id }) => {
+            console.log('Device ID has gone offline', device_id);
+          });
+
+          // Connect to the player!
+          player.connect();
+        }
+      }).catch(alert);
+    },
+
   };  // end of thaat
 
 
@@ -449,3 +488,4 @@ return {
 // globals next to ytfy
 var onYouTubeIframeAPIReady = ytfy.yt_player.onYouTubeIframeAPIReady_internal;
 var googleApiClientReady = ytfy.yt_search.load_youtube_search;
+var onSpotifyWebPlaybackSDKReady = ytfy.spotify.initializeWebPlayback;
