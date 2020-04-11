@@ -127,6 +127,22 @@ function spotify_api_factory(type) {
 
     _is_loggedin:null,  // unique (private) promise
 
+    /*
+     * Promise that fail if not logged in and returns nothing if logged in.
+     *
+     * TODO: remove one of the many logged-in variants
+     * Q: Is it much better than returning {is_loggedin:true/false} from retrieve_token?
+     * TODO: throw specific exception (if it exists in js)?
+     */
+    logged: function()
+    {
+      return thaat.is_loggedin().then(function (logged_){
+        if (logged_ == false) {
+          throw 'not logged';
+        }
+      });
+    },
+
     /**
      * @return {Promise} that resolves with loggedin status, and
      * reject on token parsing error. If called several times,
