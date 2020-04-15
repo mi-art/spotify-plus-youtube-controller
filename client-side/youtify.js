@@ -97,7 +97,7 @@ function youtube_player_factory()
         // reset flag
         thaat.playSpotifyOnVideoEnd = false;
 
-        ytfy.spotify.playable_device()
+        ytfy.spotify.player.playable_device()
         .then(
           () => ytfy.spotify.play(),
           function(error){
@@ -188,31 +188,13 @@ function youtube_search_factory()
   return thaat;
 }
 
-function spotify_factory()
+/**
+ * Wraps the device selection and initialize web-playback if needed.
+ *
+ *  @param api is the spotify api object
+ */
+function spotify_player_factory(api)
 {
-  function sleepy_error(error)
-  {
-    console.log(error);
-    alert('Spotify device fell asleep, wake him up playing something!')
-  }
-
-  /**
-   * Extract relevant keys from Spotify API track map.
-   * Returns empty array if no tracks
-   */
-  var extractTracksInfo = function(items) {
-    var filtered = []; // subset of api results
-    items.forEach(function(element) {
-      const artists_str = element.artists.map(a => a.name).join(", ");
-      const sub = {
-        uri: element.uri,
-        name: element.name + ' by ' + artists_str,
-      };
-      filtered.push(sub);
-    });
-    return filtered;
-  }
-
   var player = null;
 
 
@@ -235,9 +217,8 @@ function spotify_factory()
   //   console.log.bind(null, '_wasWebPlaybackHandled: just rejected :(')
   // );
 
-  var thaat =  {
-
-    api: spotify_api_factory('client'),
+  var thaat = {
+    on_loaded: _wasWebPlaybackHandled,
 
     /**
      * Create a promise that is successful if there is an active
@@ -264,7 +245,7 @@ function spotify_factory()
 
       return first
         .then(function () {
-          return thaat.api.call('https://api.spotify.com/v1/me/player', 'GET');
+          return api.call('https://api.spotify.com/v1/me/player', 'GET');
         })
         .then(function(response) {
           if (response == undefined)
@@ -282,10 +263,124 @@ function spotify_factory()
     },
 
     /**
+     * Create player without starting it (will start on play call)
+     *
+     * Must be called when spotify logged in.
+     */
+    _initializeWebPlayback: function()
+    {
+      return new Promise(function(resolve_cb, reject_cb)
+        {
+          player = new Spotify.Player({
+            name: 'Spotify and Youtube on the same page',
+            getOAuthToken: api.getOAuthToken,
+          });
+
+          // Error handling
+          player.addListener('initialization_error', console.error);
+          player.addListener('authentication_error', console.error);
+          player.addListener('account_error', console.error);
+          player.addListener('playback_error', console.error);
+
+          // Playback status updates
+          player.addListener('player_state_changed', console.log);
+
+          // Ready
+          player.addListener('ready', ({ device_id }) => {
+            console.log('Ready with Device ID', device_id);
+            // Switch to it
+            // true:  switch AND start playback on input device even if nobody was playing before
+            // false: switch to new device ONLY if there was no playing device. otherwise does nothing
+            api.call("https://api.spotify.com/v1/me/player", "PUT", {device_ids:[device_id], play:false})
+            .then(resolve_cb);
+          });
+
+          // Not Ready
+          player.addListener('not_ready', ({ device_id }) => {
+            console.log('Device ID has gone offline', device_id);
+          });
+
+          // Connect to the player!
+          player.connect().catch(reject_cb);
+        });
+    },
+
+    /**
+     * Check whether logged-in, and no active device. If so instanciate WebPlayback.
+     */
+    initializeWebPlaybackIfNeeded: function()
+    {
+      api.logged()
+      .then(
+        // was logged
+        () => {
+          return thaat.playable_device(false)
+            .then(
+              notify_WebPlayback_handled,  // OK: existing device
+              function(e) { // NOK: catch "no dev" failure (not ideal because could be other error)
+                if (e != 'No device available') alert(e);
+                thaat._initializeWebPlayback()
+                .then(notify_WebPlayback_handled, notify_WebPlayback_crashed);
+            });
+        },
+
+        // catch: was not logged (alert if other error)
+        // cannot determine if WebPlayback needed as not logged in yet
+        (e) => {
+          if (e != 'not logged') alert(e);
+        }
+      );
+    },
+  };
+
+  return thaat;
+};
+
+/**
+ * Interface to spotify functionnalities
+ */
+function spotify_factory()
+{
+  // TODO: instantiate web-playback instead
+  function sleepy_error(error)
+  {
+    console.log(error);
+    alert('Spotify device fell asleep, wake him up playing something!')
+  }
+
+  /**
+   * Extract relevant keys from Spotify API track map.
+   * Returns empty array if no tracks
+   */
+  var extractTracksInfo = function(items) {
+    var filtered = []; // subset of api results
+    items.forEach(function(element) {
+      const artists_str = element.artists.map(a => a.name).join(", ");
+      const sub = {
+        uri: element.uri,
+        name: element.name + ' by ' + artists_str,
+      };
+      filtered.push(sub);
+    });
+    return filtered;
+  }
+
+
+  var thaat =  {
+
+    api: spotify_api_factory('client'),
+
+    // thaat.api does not work. maybe real classes would fix that
+    // https://stackoverflow.com/a/4616273
+    init: function() {
+      this.player = spotify_player_factory(this.api);
+    },
+
+    /**
      * Return a promise that resolve with the device name (or "NO DEVICE")
      */
     spotify_active_device: function() {
-      return thaat.playable_device()
+      return thaat.player.playable_device()
         .then(result => result.device_name)
         .catch(function (error) {
           return("NO DEVICE");
@@ -319,7 +414,7 @@ function spotify_factory()
      */
     pause: function(req, res)
     {
-      return thaat.playable_device().then(
+      return thaat.player.playable_device().then(
         function (result) {
           if (result.is_playing)
           {
@@ -355,7 +450,7 @@ function spotify_factory()
      * TODO: check play api no error and statusCode === 204
      */
     play: function(uri) {
-      return thaat.playable_device().then(
+      return thaat.player.playable_device().then(
         function (result) {
           if (uri)
           {
@@ -397,7 +492,7 @@ function spotify_factory()
     *  - Spotify.Player#getCurrentState (from web-playback-sdk) gives access to the queue
     */
     queue: function(uri) {
-      return thaat.playable_device()
+      return thaat.player.playable_device()
       .then(
         function () {
           async.series([
@@ -425,77 +520,11 @@ function spotify_factory()
         });
     },
 
-    /**
-     * Create player without starting it (will start on play call)
-     *
-     * Must be called when spotify logged in.
-     */
-    _initializeWebPlayback: function()
-    {
-      return new Promise(function(resolve_cb, reject_cb)
-        {
-          player = new Spotify.Player({
-            name: 'Spotify and Youtube on the same page',
-            getOAuthToken: thaat.api.getOAuthToken,
-          });
 
-          // Error handling
-          player.addListener('initialization_error', console.error);
-          player.addListener('authentication_error', console.error);
-          player.addListener('account_error', console.error);
-          player.addListener('playback_error', console.error);
 
-          // Playback status updates
-          player.addListener('player_state_changed', console.log);
+  }; // end of thaat
 
-          // Ready
-          player.addListener('ready', ({ device_id }) => {
-            console.log('Ready with Device ID', device_id);
-            // Switch to it
-            // true:  switch AND start playback on input device even if nobody was playing before
-            // false: switch to new device ONLY if there was no playing device. otherwise does nothing
-            thaat.api.call("https://api.spotify.com/v1/me/player", "PUT", {device_ids:[device_id], play:false})
-            .then(resolve_cb);
-          });
-
-          // Not Ready
-          player.addListener('not_ready', ({ device_id }) => {
-            console.log('Device ID has gone offline', device_id);
-          });
-
-          // Connect to the player!
-          player.connect().catch(reject_cb);
-        });
-    },
-
-    /**
-     * Check whether logged-in, and no active device. If so instanciate WebPlayback.
-     */
-    initializeWebPlaybackIfNeeded: function()
-    {
-      thaat.api.logged()
-      .then(
-        // was logged
-        () => {
-          return thaat.playable_device(false)
-            .then(
-              notify_WebPlayback_handled,  // OK: existing device
-              function(e) { // NOK: catch "no dev" failure (not ideal because could be other error)
-                if (e != 'No device available') alert(e);
-                thaat._initializeWebPlayback()
-                .then(notify_WebPlayback_handled, notify_WebPlayback_crashed);
-            });
-        },
-
-        // catch: was not logged (alert if other error)
-        // cannot determine if WebPlayback needed as not logged in yet
-        (e) => {
-          if (e != 'not logged') alert(e);
-        }
-      );
-    },
-
-  };  // end of thaat
+  thaat.init();  
 
 
   // Back to home page on token expiry
@@ -554,4 +583,4 @@ return {
 // globals next to ytfy
 var onYouTubeIframeAPIReady = ytfy.yt_player.onYouTubeIframeAPIReady_internal;
 var googleApiClientReady = ytfy.yt_search.load_youtube_search;
-var onSpotifyWebPlaybackSDKReady = ytfy.spotify.initializeWebPlaybackIfNeeded;
+var onSpotifyWebPlaybackSDKReady = ytfy.spotify.player.initializeWebPlaybackIfNeeded;
