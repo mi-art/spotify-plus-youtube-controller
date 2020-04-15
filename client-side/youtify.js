@@ -218,8 +218,6 @@ function spotify_player_factory(api)
   // );
 
   var thaat = {
-    on_loaded: _wasWebPlaybackHandled,
-
     /**
      * Create a promise that is successful if there is an active
      * spotify device and returns the device name and whether its playing.
@@ -234,7 +232,7 @@ function spotify_player_factory(api)
     {
       var first;
 
-      if (wait_for_WebPlaybackHandled )
+      if (wait_for_WebPlaybackHandled)
       {
         first = _wasWebPlaybackHandled;
       }
@@ -266,6 +264,8 @@ function spotify_player_factory(api)
      * Create player without starting it (will start on play call)
      *
      * Must be called when spotify logged in.
+     *
+     * TODO: add UI notification that we switched to WebPlayback
      */
     _initializeWebPlayback: function()
     {
@@ -524,7 +524,7 @@ function spotify_factory()
 
   }; // end of thaat
 
-  thaat.init();  
+  thaat.init();
 
 
   // Back to home page on token expiry
