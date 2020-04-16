@@ -196,7 +196,10 @@ function youtube_search_factory()
 function spotify_player_factory(api)
 {
   var player = null;
+  var _device_id = null;
 
+  // https://stackoverflow.com/a/33843314
+  const promiseTimeout = time => () => new Promise(resolve => setTimeout(resolve, time));
 
   /*
   * Promise that resolve when it was determined and handled whether web
@@ -206,11 +209,16 @@ function spotify_player_factory(api)
   */
   var notify_WebPlayback_handled;
   var notify_WebPlayback_crashed;
-  var _wasWebPlaybackHandled = new Promise(function(resolve, reject)
+  var _wasWebPlaybackHandled;
+  function reset_promise()
   {
-    notify_WebPlayback_handled = resolve;
-    notify_WebPlayback_crashed = reject;
-  });
+    _wasWebPlaybackHandled = new Promise(function(resolve, reject)
+    {
+      notify_WebPlayback_handled = resolve;
+      notify_WebPlayback_crashed = reject;
+    });
+  };
+  reset_promise();
 
   // _wasWebPlaybackHandled.then(
   //   console.log.bind(null, '_wasWebPlaybackHandled: just resolved :)'),
@@ -224,7 +232,8 @@ function spotify_player_factory(api)
      * Fails if there is no active device.
      *
      * If @param {boolean} wait_for_WebPlaybackHandled is false we don't
-     * wait for spotify web playback, to avoid cyclical references (not nice?)
+     * wait for spotify web playback, to avoid cyclical references (not nice?).
+     * This also blocks other calls than the init one from onSDKReady().
      *
      * TODO: rename in _playable_device?
      */
@@ -248,16 +257,33 @@ function spotify_player_factory(api)
         .then(function(response) {
           if (response == undefined)
           {
-            throw('No device available');
+            console.log('No device visible (yet): create it and retry');
+            // TODO: prevent for infinite recursion (for instance with a calls count param)
+
+            // timeout needed because _handle_no_device will resolve when device is ready
+            // but it takes a while to spotify api to get updated with new device id so we
+            // wait to avoid many calls due to the recursion.
+            const wait_ms = 1000;
+            return thaat._handle_no_device().then(promiseTimeout(wait_ms)).then(thaat.playable_device.bind(null, true));
           }
           else
           {
+            notify_WebPlayback_handled();  // a bit ugly because called each time, but works..
             return({
               device_name:response.device.name,
               is_playing:response.is_playing,
             });
           }
         });
+    },
+
+    _handle_no_device: function()
+    {
+      // reject previous promise and reset it to pause other potential user calls
+      notify_WebPlayback_crashed('no device (re-init needed)');
+      reset_promise();
+
+      return thaat._initPlayer().then(notify_WebPlayback_handled, notify_WebPlayback_crashed);
     },
 
     /**
@@ -267,64 +293,80 @@ function spotify_player_factory(api)
      *
      * TODO: add UI notification that we switched to WebPlayback
      */
-    _initializeWebPlayback: function()
+    _initPlayer: function()
     {
       return new Promise(function(resolve_cb, reject_cb)
         {
-          player = new Spotify.Player({
-            name: 'Spotify and Youtube on the same page',
-            getOAuthToken: api.getOAuthToken,
-          });
+          if (player != null)
+          {
+            // already created
+            thaat._switch_to_WebPlayback().then(resolve_cb);
+          }
+          else
+          {
+            player = new Spotify.Player({
+              name: 'Spotify and Youtube on the same page',
+              getOAuthToken: api.getOAuthToken,
+            });
 
-          // Error handling
-          player.addListener('initialization_error', console.error);
-          player.addListener('authentication_error', console.error);
-          player.addListener('account_error', console.error);
-          player.addListener('playback_error', console.error);
+            // Error handling
+            player.addListener('initialization_error', console.error);
+            player.addListener('authentication_error', console.error);
+            player.addListener('account_error', console.error);
+            player.addListener('playback_error', console.error);
 
-          // Playback status updates
-          player.addListener('player_state_changed', console.log);
+            // Playback status updates
+            // player.addListener('player_state_changed', console.log);
 
-          // Ready
-          player.addListener('ready', ({ device_id }) => {
-            console.log('Ready with Device ID', device_id);
-            // Switch to it
-            // true:  switch AND start playback on input device even if nobody was playing before
-            // false: switch to new device ONLY if there was no playing device. otherwise does nothing
-            api.call("https://api.spotify.com/v1/me/player", "PUT", {device_ids:[device_id], play:false})
-            .then(resolve_cb);
-          });
+            // Ready
+            player.addListener('ready', ({ device_id }) => {
+              console.log('Ready with Device ID', device_id);
+              _device_id = device_id;
+              thaat._switch_to_WebPlayback()
+              .then(resolve_cb, reject_cb);
+            });
 
-          // Not Ready
-          player.addListener('not_ready', ({ device_id }) => {
-            console.log('Device ID has gone offline', device_id);
-          });
+            // Not Ready
+            player.addListener('not_ready', ({ device_id }) => {
+              console.log('Device ID has gone offline', device_id);
+            });
 
-          // Connect to the player!
-          player.connect().catch(reject_cb);
+            // Connect to the player!
+            player.connect().then(success => {
+              if (!success) throw 'WebPlayback connection failed';
+            });
+          }
         });
     },
 
     /**
-     * Check whether logged-in, and no active device. If so instanciate WebPlayback.
+     * Switch to web playback device id. Must have been set before.
+     *
+     * NOTE: maybe 'not_ready' events should be checked, in case web player
+     *       could go offline
      */
-    initializeWebPlaybackIfNeeded: function()
+    _switch_to_WebPlayback: function()
+    {
+      if (_device_id == null) throw 'Internal device id is not set';
+
+      // Switch to it
+      // true:  switch AND start playback on input device even if nobody was playing before
+      // false: switch to new device ONLY if there was no playing device. otherwise does nothing
+      return api.call("https://api.spotify.com/v1/me/player", "PUT", {device_ids:[_device_id], play:false});
+    },
+
+    /**
+     * Check whether logged-in, and attempt to retrieve playable_device, which internally
+     * triggers web player init if needed.
+     */
+    onSDKReady: function()
     {
       api.logged()
       .then(
         // was logged
-        () => {
-          return thaat.playable_device(false)
-            .then(
-              notify_WebPlayback_handled,  // OK: existing device
-              function(e) { // NOK: catch "no dev" failure (not ideal because could be other error)
-                if (e != 'No device available') alert(e);
-                thaat._initializeWebPlayback()
-                .then(notify_WebPlayback_handled, notify_WebPlayback_crashed);
-            });
-        },
+        () => thaat.playable_device(false).catch(alert),
 
-        // catch: was not logged (alert if other error)
+        // catch was not logged (alert if other error)
         // cannot determine if WebPlayback needed as not logged in yet
         (e) => {
           if (e != 'not logged') alert(e);
@@ -583,4 +625,4 @@ return {
 // globals next to ytfy
 var onYouTubeIframeAPIReady = ytfy.yt_player.onYouTubeIframeAPIReady_internal;
 var googleApiClientReady = ytfy.yt_search.load_youtube_search;
-var onSpotifyWebPlaybackSDKReady = ytfy.spotify.player.initializeWebPlaybackIfNeeded;
+var onSpotifyWebPlaybackSDKReady = ytfy.spotify.player.onSDKReady;
