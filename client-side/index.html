@@ -70,8 +70,7 @@
       </div>
     </div>
     <script id="spotify-status-template" type="text/x-handlebars-template">
-      <span>:<span class="text-success"> {{spotify_active_device}}</span>.
-        (If your device is not showing up, wake it up by playing some stuff directly on it.)</span>
+      <span>:<span class="text-success"> {{spotify_active_device}}</span>.</span>
     </script>
 
     <!-- Modal -->
@@ -92,7 +91,9 @@
               <span class="text-danger">Play</span> start the Youtube video and stops Spotify.
               When video ends or when you close it, Spotify playback will resume what it was playing before (assuming the device did not go offline).
             </p>
-            <p>Youtube videos are directly played on this page while Spotify plays from your active device<span id="spotify-status">.</span></p>
+            <p>Youtube videos are played on this page and Spotify plays from your active device<span id="spotify-status">.</span> When no device is active,
+              Spotify plays directly from here. As it gives no playback controls and does not work at all with Chrome, a real player
+              such as <a target="_blank" rel="noopener noreferrer" href="https://open.spotify.com/">open.spotify.com</a> is often prefered.</p>
             <p class="small">
               Code hosted on <a href="https://github.com/mi-art/spotify-plus-youtube-controller">GitHub</a>.
               Spotify icon by <a href="https://icons8.com/icon/zQBiTJTC1Gj0/color-hand-drawn">Icons8</a>.
