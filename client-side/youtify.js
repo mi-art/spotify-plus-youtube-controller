@@ -229,42 +229,42 @@ function spotify_player_factory(api)
     /**
      * Create a promise that is successful if there is an active
      * spotify device and returns the device name and whether its playing.
-     * Fails if there is no active device.
+     * If there is no device, it instantiate a local one and returns its name.
+     * If local device cannot be created after few attempts, it fails.
+     *
      *
      * If @param {boolean} wait_for_WebPlaybackHandled is false we don't
      * wait for spotify web playback, to avoid cyclical references (not nice?).
      * This also blocks other calls than the init one from onSDKReady().
-     *
-     * TODO: rename in _playable_device?
      */
-    playable_device: function (wait_for_WebPlaybackHandled = true)
+    playable_device: function()
     {
-      var first;
+      const MAX_ATTEMPTS = 3;
+      return _wasWebPlaybackHandled.then(thaat._playable_device.bind(null, MAX_ATTEMPTS));
+    },
 
-      if (wait_for_WebPlaybackHandled)
+    // Call recursively until no more attempts are permitted
+    _playable_device: function (remaining_attempts)
+    {
+      if (remaining_attempts <= 0)
       {
-        first = _wasWebPlaybackHandled;
-      }
-      else
-      {
-        first = Promise.resolve();
+        return Promise.reject('Maximum number of attempts of device creation reached!');
       }
 
-      return first
+      return Promise.resolve()
         .then(function () {
           return api.call('https://api.spotify.com/v1/me/player', 'GET');
         })
         .then(function(response) {
           if (response == undefined)
           {
-            console.log('No device visible (yet): create it and retry');
-            // TODO: prevent for infinite recursion (for instance with a calls count param)
-
             // timeout needed because _handle_no_device will resolve when device is ready
             // but it takes a while to spotify api to get updated with new device id so we
             // wait to avoid many calls due to the recursion.
-            const wait_ms = 1000;
-            return thaat._handle_no_device().then(promiseTimeout(wait_ms)).then(thaat.playable_device.bind(null, true));
+            const WAIT_MS = 1000;
+            return thaat._handle_no_device()
+                  .then(promiseTimeout(WAIT_MS))
+                  .then(thaat._playable_device.bind(null, remaining_attempts - 1));  // recurse
           }
           else
           {
@@ -364,7 +364,7 @@ function spotify_player_factory(api)
       api.logged()
       .then(
         // was logged
-        () => thaat.playable_device(false).catch(alert),
+        () => thaat._playable_device(3).catch(alert),
 
         // catch was not logged (alert if other error)
         // cannot determine if WebPlayback needed as not logged in yet
