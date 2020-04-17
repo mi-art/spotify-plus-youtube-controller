@@ -206,6 +206,9 @@ function spotify_player_factory(api)
   * playback was needed and if applicable initialized. This is needed to
   * allow user to trigger a song and actually send it once the device is
   * ready.
+  *
+  * TODO: better encapsulation following
+  * http://lea.verou.me/2016/12/resolve-promises-externally-with-this-one-weird-trick/
   */
   var notify_WebPlayback_handled;
   var notify_WebPlayback_crashed;
@@ -219,6 +222,10 @@ function spotify_player_factory(api)
     });
   };
   reset_promise();
+
+  // in case the promise was not used anywhere before it's rejected, at least
+  // one catch must be attached to it to avoid un-caught exception error
+  _wasWebPlaybackHandled.catch(() => {});
 
   // _wasWebPlaybackHandled.then(
   //   console.log.bind(null, '_wasWebPlaybackHandled: just resolved :)'),
